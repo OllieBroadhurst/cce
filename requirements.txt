@@ -1,0 +1,8 @@
+pandas
+dash==1.2.0
+dash-daq==0.1.0
+matplotlib
+google
+google-auth
+pandas_gbq
+dash-cytoscape==0.0.5
