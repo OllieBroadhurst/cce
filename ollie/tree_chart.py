@@ -1,19 +1,22 @@
 
-#import networkx as nx
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
-from queries import default_tree_sql, criteria_tree_sql
+from queries import criteria_tree_sql
 
 
-class tree_chart:
-    def __init__(self, service_types=None):
+num_nodes = 0
+links = {}
 
-        self.service_types = service_types
-        self.sql = criteria_tree_sql(self.service_types)
-        self.figure = go.FigureWidget({'data':
+def get_figure(service_types=None):
+    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types),
+    project_id='bcx-insights',
+    dialect='standard')
+
+    if len(df) == 0:
+        return go.FigureWidget({'data':
                     {
                     'x': [],
                     'y': [],
@@ -25,157 +28,167 @@ class tree_chart:
                     yaxis=dict(showticklabels=False, showline=False)
                     )})
 
-        self.num_nodes = 0
-        self.colours = []
-        self.links = {}
+    df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
 
-    def get_figure(self):
-        df = pd.io.gbq.read_gbq(self.sql, project_id='bcx-insights', dialect='standard')
+    WIDTH = df['Stage'].value_counts().max()
+    HEIGHT = 5
 
-        if len(df) == 0:
-            return go.FigureWidget({'data':
-                        {
-                        'x': [],
-                        'y': [],
-                        'mode': 'markers',
-                        'marker': {'size': 1}
-                        },
-                        'layout':go.Layout(
-                        xaxis=dict(showticklabels=False, showline=False),
-                        yaxis=dict(showticklabels=False, showline=False)
-                        )})
+    TOP = HEIGHT * 0.9
+    LEVEL_HEIGHT = HEIGHT // len(df)
 
-        df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
+    w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
+    h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
 
-        WIDTH = df['Stage'].value_counts().max()
-        HEIGHT = 5
+    num_nodes = 0
+    links = {}
+    labels = {}
+    coords = {}
+    counts = {}
+    coords_map = {}
 
-        TOP = HEIGHT * 0.9
-        LEVEL_HEIGHT = HEIGHT // len(df)
+    k = 0
+    for i in range(df['Stage'].min(), df['Stage'].max() + 1):
+        reasons = df.loc[df['Stage'] == i, 'ACTION_TYPE_DESC'].value_counts().to_dict()
 
-        w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
-        h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
+        for j, r in enumerate(reasons.keys()):
+            counts[k] = reasons[r]
+            labels[k] = r
+            coords[k] = (w_spacing[i] * (j + 0.5), TOP - i * h_spacing)
+            coords_map[(i, r)] = coords[k]
+            k += 1
 
-        labels = {}
-        coords = {}
-        counts = {}
-        coords_map = {}
+    all_nodes = list(coords.values())
 
-        k = 0
-        for i in range(df['Stage'].min(), df['Stage'].max() + 1):
-            reasons = df.loc[df['Stage'] == i, 'ACTION_TYPE_DESC'].value_counts().to_dict()
+    coords_map = pd.Series(coords_map, name='Position')
 
-            for j, r in enumerate(reasons.keys()):
-                counts[k] = reasons[r]
-                labels[k] = r
-                coords[k] = (w_spacing[i] * (j + 0.5), TOP - i * h_spacing)
-                coords_map[(i, r)] = coords[k]
-                k += 1
+    df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
 
-        all_nodes = list(coords.values())
+    df = df[['ORDER_ID_ANON', 'Stage', 'Position']].groupby(['ORDER_ID_ANON', 'Stage']).first()
+    df['Link'] = df['Position'].shift(-1)
 
-        coords_map = pd.Series(coords_map, name='Position')
+    for ix, l in df.iterrows():
+      if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
+        if l['Position'] not in links.keys():
+          links[l['Position']] = []
 
-        df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
+        if l['Link'] not in links[l['Position']]:
+          links[l['Position']].append(l['Link'])
 
-        df = df[['ORDER_ID_ANON', 'Stage', 'Position']].groupby(['ORDER_ID_ANON', 'Stage']).first()
-        df['Link'] = df['Position'].shift(-1)
+    colours = ['green'] * len(all_nodes)
 
-        for ix, l in df.iterrows():
-          if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
-            if l['Position'] not in self.links.keys():
-              self.links[l['Position']] = []
+    node_x = [x[0] for x in all_nodes]
+    node_y = [y[1] for y in all_nodes]
 
-            if l['Link'] not in self.links[l['Position']]:
-              self.links[l['Position']].append(l['Link'])
+    edge_x = []
+    edge_y = []
 
-        colours = ['green'] * len(all_nodes)
+    for k in links.keys():
+      for v in links[k]:
+        edge_x += [v[0], k[0], None]
+        edge_y += [v[1], k[1], None]
 
-        node_x = [x[0] for x in all_nodes]
-        node_y = [y[1] for y in all_nodes]
-
-        edge_x = []
-        edge_y = []
-
-        for k in self.links.keys():
-          for v in self.links[k]:
-            edge_x += [v[0], k[0], None]
-            edge_y += [v[1], k[1], None]
-
-        edge_trace = go.Scatter(
-            x=edge_x, y=edge_y,
-            line=dict(width=0.5, color='#888'),
-            hoverinfo='none',
-            mode='lines')
-
-        node_trace = go.Scatter(
-            x=node_x, y=node_y,
-            mode='markers+text',
-            textposition='top center',
-            text = list(labels.values()),
-            hoverinfo='text',
-            hovertext=[str(t) for t in counts.values()],
-            marker=dict(
-                color=colours,
-                size=10,
-                line_width=2))
-
-        self.figure = go.FigureWidget(data=[edge_trace, node_trace],
-                     layout=go.Layout(
-                        titlefont_size=16,
-                        showlegend=False,
-                        margin=dict(b=20,l=5,r=5,t=40),
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                        )
-
-        self.num_nodes = len(all_nodes)
-        self.colours = self.figure.data[1].marker.color
-
-        return self.figure
-
-
-    def highlight_route(self, node):
-        route_x = []
-        route_y = []
-
-        def get_route_coords(node):
-            for n in node:
-                if self.links.get(n) is not None:
-                    for v in self.links.get(n):
-                        route_x.append([n[0], v[0], None])
-                        route_y.append([n[1], v[1], None])
-                        get_route_coords([v])
-
-        get_route_coords(node)
-
-        route_x = sum(route_x, [])
-        route_y = sum(route_y, [])
-
-        return route_x, route_y
-
-
-    def find_journey(self, x, y):
-        route_x, route_y = self.highlight_route([(x, y)])
-        return self.figure.add_trace(go.Scatter(
-        x=route_x, y=route_y,
-        line=dict(width=1, color='red'),
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
         hoverinfo='none',
-        mode='lines'))
+        mode='lines')
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers+text',
+        textposition='top center',
+        text = list(labels.values()),
+        hoverinfo='text',
+        hovertext=[str(t) for t in counts.values()],
+        marker=dict(
+            color=colours,
+            size=10,
+            line_width=2))
+
+    figure = go.FigureWidget(data=[edge_trace, node_trace],
+                 layout=go.Layout(
+                    titlefont_size=16,
+                    showlegend=False,
+                    margin=dict(b=20,l=5,r=5,t=40),
+                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
+
+    return figure, links
 
 
-    def reset_fig(self):
-        self.figure.data[1].marker.color = ['green'] * self.num_nodes
-        self.figure.data[1].marker.opacity = [1] * self.num_nodes
-        self.figure.data = self.figure.data[0:2]
+def highlight_route(paths, node):
+    route_x = []
+    route_y = []
+
+    def get_route_coords(node):
+        for n in node:
+            if paths.get(n) is not None:
+                for v in paths.get(n):
+                    route_x.append([n[0], v[0], None])
+                    route_y.append([n[1], v[1], None])
+                    get_route_coords([v])
+
+    get_route_coords(node)
+
+    route_x = sum(route_x, [])
+    route_y = sum(route_y, [])
+
+    return route_x, route_y
 
 
-    def format_selection(self, selection):
-        colours = ['green'] * self.num_nodes
-        alphas = [0.2] * self.num_nodes
+def find_journey(figure, paths, x, y):
+    route_x, route_y = highlight_route(paths, [(x, y)])
+    figure = go.FigureWidget(data=figure)
+    return figure.add_trace(go.Scatter(
+    x=route_x, y=route_y,
+    line=dict(width=1, color='red'),
+    hoverinfo='none',
+    mode='lines'))
 
-        colours[selection['pointIndex']] = 'blue'
-        alphas[selection['pointIndex']] = 1
+    return figure
 
-        self.figure.data[1].marker.color = colours
-        self.figure.data[1].marker.opacity = alphas
+
+def reset_fig(figure):
+    num_nodes = len(figure['data'][1]['marker']['color'])
+    figure['data'][1]['marker']['color'] = ['green'] * num_nodes
+    figure['data'][1]['marker']['opacity'] = [1] * num_nodes
+    figure['data'] = figure['data'][0:2]
+
+    return figure
+
+
+def format_selection(figure, selection):
+    num_nodes = len(figure['data'][1]['marker']['color'])
+    colours = ['green'] * num_nodes
+    alphas = [0.2] * num_nodes
+
+    colours[selection['pointIndex']] = 'blue'
+    alphas[selection['pointIndex']] = 1
+
+    figure['data'][1]['marker']['color'] = colours
+    figure['data'][1]['marker']['opacity'] = alphas
+
+    return figure
+
+
+def default_chart():
+    empty_scatter = {'data':
+                {
+                'x': [],
+                'y': [],
+                'mode': 'markers',
+                'marker': {'size': 1}
+                },
+                'layout':go.Layout(
+                xaxis=dict(showticklabels=False, showline=False),
+                yaxis=dict(showticklabels=False, showline=False)
+                )}
+    return go.FigureWidget(data=empty_scatter,
+                 layout=go.Layout(
+                    titlefont_size=16,
+                    showlegend=False,
+                    margin=dict(b=20,l=5,r=5,t=40),
+                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
