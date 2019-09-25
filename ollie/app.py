@@ -2,58 +2,81 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
-from tree_chart import tree_sql, tree_chart
+from tree_chart import tree_chart
+from filters import service_options
 
-tc = tree_chart(tree_sql)
+import json
+
+IP = r'http://127.0.0.1:8050/'
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+tc = tree_chart()
+fig = tc.get_figure()
+
 app.layout = html.Div(children=[
     html.H1(children='BCX Insights'),
-    html.Div(id='msgbox', children='''
-        This is a test.
-    '''),
+    html.Div(html.Button('Show', id='run_button')),
+    html.Div('{}', id='history', style={'display': 'none'}),
+    html.Div(
+                dcc.Checklist(
+                    id='service_filter',
+                    children='Service Type',
+                    options=service_options(),
+                    style={'width': '20%',
+                    'height':'20%',
+                    'display': 'inline-block'}
+                    )),
+    html.Div(
+                dcc.Graph(id='tree_chart',
+                    #figure=tree_chart().get_figure(),
+                    style={'width': '70%',
+                    'height':'50%',
+                    'display': 'inline-block'})
+                )])
 
-    dcc.Graph(
-        id='tree_chart', figure=tc
-    ),
-
-])
 
 
 @app.callback(
-    Output('tree_chart', 'figure'),
-    [Input('tree_chart', 'clickData')])
-def generate_tree(node_click):
+    [Output('tree_chart', 'figure'),
+    Output('history', 'children')],
+    [Input('run_button', 'n_clicks'),
+    Input('tree_chart', 'clickData')],
+    [State('service_filter', 'value'),
+    State('history', 'children')])
+def generate_tree(click_btn, node_click, services, btn_history):
+    history = json.loads(btn_history)
+
+    if str(click_btn) not in history.keys():
+        if click_btn is not None and click_btn > 0:
+            tc = tree_chart(services)
+            fig = tc.get_figure()
+            history[click_btn] = 1
+
+            return fig, json.dumps(history)
+
     print(node_click)
-    if node_click is not None:
+    if node_click is not None and click_btn is not None:
+        #tc = tree_chart()
+        num_nodes = tc.num_nodes
+        colours = tc.colours
+        tc.reset_fig()
+        selection = node_click['points'][0]
+        if colours[selection['pointIndex']] != 'blue':
+            tc.format_selection(selection)
+            tc.find_journey(node_click['points'][0]['x'],
+                            node_click['points'][0]['y'])
 
-        num_nodes = len(tc.data[1].marker.color)
-        colours = tc.data[1].marker.color
+    else:
+        tc = tree_chart(services)
+        fig = tc.get_figure()
 
-        if colours[node_click['points'][0]['pointIndex']] != 'blue':
-
-            colours = ['green'] * num_nodes
-            alphas = [0.2] * num_nodes
-
-            colours[node_click['points'][0]['pointIndex']] = 'blue'
-            alphas[node_click['points'][0]['pointIndex']] = 1
-
-            tc.data[1].marker.color = colours
-            tc.data[1].marker.opacity = alphas
-
-        else:
-
-            tc.data[1].marker.color = ['green'] * num_nodes
-            tc.data[1].marker.opacity = [1] * num_nodes
-            tc.data = tc.data[0:2]
-
-    return tc
-
+    return fig, json.dumps(history)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
