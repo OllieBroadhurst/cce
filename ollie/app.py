@@ -64,7 +64,7 @@ def generate_tree(click_btn, node_click, services, btn_history, current_fig, pat
         fig, links = get_figure(services)
 
         history[click_btn] = 1
-        path_dict['0'] = {str(k):str(v) for k, v in links.items()}
+        paths = {str(k):str(v) for k, v in links.items()}
         return fig, json.dumps(history), json.dumps(paths)
 
     elif node_click is not None and history.get('1') is not None:

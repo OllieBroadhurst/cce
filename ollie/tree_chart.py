@@ -146,8 +146,6 @@ def find_journey(figure, paths, x, y):
     hoverinfo='none',
     mode='lines'))
 
-    return figure
-
 
 def reset_fig(figure):
     num_nodes = len(figure['data'][1]['marker']['color'])
