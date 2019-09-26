@@ -6,3 +6,4 @@ google
 google-auth
 pandas_gbq
 dash-cytoscape==0.0.5
+ipywidgets
