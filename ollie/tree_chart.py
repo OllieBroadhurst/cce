@@ -6,11 +6,22 @@ import pandas as pd
 
 from queries import criteria_tree_sql
 
+default_axis_params = dict(showgrid=False,
+                        zeroline=False,
+                        showticklabels=False,
+                        showline=False)
 
-num_nodes = 0
-links = {}
+chart_size = dict(b=40,l=5,r=5,t=40)
 
 def get_figure(service_types=None):
+
+    num_nodes = 0
+    links = {}
+    labels = {}
+    coords = {}
+    counts = {}
+    coords_map = {}
+
     df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types),
     project_id='bcx-insights',
     dialect='standard')
@@ -26,7 +37,7 @@ def get_figure(service_types=None):
                     'layout':go.Layout(
                     xaxis=dict(showticklabels=False, showline=False),
                     yaxis=dict(showticklabels=False, showline=False)
-                    )})
+                    )}), links
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
 
@@ -39,12 +50,7 @@ def get_figure(service_types=None):
     w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
     h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
 
-    num_nodes = 0
-    links = {}
-    labels = {}
-    coords = {}
-    counts = {}
-    coords_map = {}
+
 
     k = 0
     for i in range(df['Stage'].min(), df['Stage'].max() + 1):
@@ -109,7 +115,7 @@ def get_figure(service_types=None):
                  layout=go.Layout(
                     titlefont_size=16,
                     showlegend=False,
-                    margin=dict(b=20,l=5,r=5,t=40),
+                    margin=chart_size,
                     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
@@ -171,22 +177,29 @@ def format_selection(figure, selection):
 
 
 def default_chart():
+    # empty_scatter = go.Scatter(
+    #     x=[], y=[],
+    #     mode='markers',
+    #     hoverinfo='text',
+    #     marker=dict(size=1))
+
     empty_scatter = {'data':
                 {
-                'x': [],
-                'y': [],
+                'x': [[]],
+                'y': [[]],
                 'mode': 'markers',
                 'marker': {'size': 1}
                 },
                 'layout':go.Layout(
-                xaxis=dict(showticklabels=False, showline=False),
-                yaxis=dict(showticklabels=False, showline=False)
+                xaxis=default_axis_params,
+                yaxis=default_axis_params
                 )}
+
     return go.FigureWidget(data=empty_scatter,
                  layout=go.Layout(
                     titlefont_size=16,
                     showlegend=False,
-                    margin=dict(b=20,l=5,r=5,t=40),
-                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    margin=chart_size,
+                    xaxis=default_axis_params,
+                    yaxis=default_axis_params)
                     )

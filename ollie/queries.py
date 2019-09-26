@@ -26,7 +26,7 @@ def criteria_tree_sql(service_type):
 
            LEFT JOIN
 
-           (SELECT CUSTOMER_NO_ANON, SERVICE_TYPE FROM
+           (SELECT DISTINCT CUSTOMER_NO_ANON, SERVICE_TYPE FROM
            `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon`) custs
            ON custs.CUSTOMER_NO_ANON = orders.ACCOUNT_NO_ANON
 
