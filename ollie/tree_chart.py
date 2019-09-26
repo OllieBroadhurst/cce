@@ -163,12 +163,18 @@ def reset_fig(figure):
 
 
 def format_selection(figure, selection):
+
+    index = selection['pointIndex']
+
     num_nodes = len(figure['data'][1]['marker']['color'])
     colours = ['green'] * num_nodes
     alphas = [0.2] * num_nodes
 
-    colours[selection['pointIndex']] = 'blue'
-    alphas[selection['pointIndex']] = 1
+    if index > len(colours) - 1:
+        index = len(colours) - 1
+
+    colours[index] = 'blue'
+    alphas[index] = 1
 
     figure['data'][1]['marker']['color'] = colours
     figure['data'][1]['marker']['opacity'] = alphas
