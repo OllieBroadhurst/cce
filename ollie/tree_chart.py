@@ -13,7 +13,7 @@ default_axis_params = dict(showgrid=False,
 
 chart_size = dict(b=40,l=5,r=5,t=40)
 
-def get_figure(service_types=None):
+def get_figure(service_types=None, customer_types=None):
 
     num_nodes = 0
     links = {}
@@ -22,7 +22,7 @@ def get_figure(service_types=None):
     counts = {}
     coords_map = {}
 
-    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types),
+    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types),
     project_id='bcx-insights',
     dialect='standard')
 
@@ -35,13 +35,13 @@ def get_figure(service_types=None):
                     'marker': {'size': 1}
                     },
                     'layout':go.Layout(
-                    xaxis=dict(showticklabels=False, showline=False),
-                    yaxis=dict(showticklabels=False, showline=False)
+                    xaxis=default_axis_params,
+                    yaxis=default_axis_params
                     )}), links
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
 
-    WIDTH = df['Stage'].value_counts().max()
+    WIDTH = df['Stage'].value_counts().max() * 0.75
     HEIGHT = 5
 
     TOP = HEIGHT * 0.9
@@ -148,7 +148,7 @@ def find_journey(figure, paths, x, y):
     figure = go.FigureWidget(data=figure)
     return figure.add_trace(go.Scatter(
     x=route_x, y=route_y,
-    line=dict(width=1, color='red'),
+    line=dict(width=1.5, color='red'),
     hoverinfo='none',
     mode='lines'))
 

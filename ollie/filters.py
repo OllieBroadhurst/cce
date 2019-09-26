@@ -22,5 +22,24 @@ def service_options():
     return options
 
 
+def customer_type():
+    type_sql = """SELECT DISTINCT CUSTOMER_TYPE_DESC value FROM
+    `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon`
+    WHERE CUSTOMER_TYPE_DESC is not NULL AND CUSTOMER_NO_ANON in
+
+    (SELECT DISTINCT ACCOUNT_NO_ANON FROM
+    `bcx-insights.telkom_customerexperience.orders_20190903_00_anon`)"""
+
+    types = pd.io.gbq.read_gbq(type_sql,
+                                    project_id='bcx-insights',
+                                    dialect='standard').fillna('N/A')
+
+    types['label'] = types['value'].str.title()
+
+    types = [{'label': x['label'],
+                'value': x['value']} for _, x in types.iterrows()]
+
+    return types
+
 if __name__ == '__main__':
     print(service_options())

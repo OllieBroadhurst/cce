@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 from tree_chart import get_figure, reset_fig, format_selection, find_journey, default_chart
-from filters import service_options
+from filters import service_options, customer_type
 
 import json
 from ast import literal_eval
@@ -18,17 +18,23 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
-                    style={'padding-right': '10px'},
+                    style={'float': 'right', 'padding-right': '15px'},
                     className="ten columns")
 
-check_list = html.Div([
-                    html.H4(children='Service'),
+filters = html.Div([
+                    html.Div([html.H5(children='Service'),
                     dcc.Checklist(
                         id='service_filter',
                         children='Service Type',
-                        options=service_options())
-                    ],
-                    #style={'width': '20%'},
+                        options=service_options())]),
+
+                    html.Div([html.H5(children='Customer Type'),
+                    dcc.Dropdown(
+                        id='customer_type_filter',
+                        children='Customer Type',
+                        multi=True,
+                        options=customer_type())])],
+                        style={'font-size': '12px'},
                     #'height':'20%'}
                     className="two columns")
 
@@ -41,7 +47,7 @@ app.layout = html.Div([
     html.Div(children='{}', id='history', style={'display': 'none'}),
     html.Div(children='{}', id='links', style={'display': 'none'}),
     html.Div([
-        check_list,
+        filters,
         graph], className="row")])
 
 
@@ -52,17 +58,19 @@ app.layout = html.Div([
     [Input('run_button', 'n_clicks'),
     Input('tree_chart', 'clickData')],
     [State('service_filter', 'value'),
+    State('customer_type_filter', 'value'),
     State('history', 'children'),
     State('tree_chart', 'figure'),
     State('links', 'children')])
-def generate_tree(click_btn, node_click, services, btn_history, current_fig, path_meta):
+def generate_tree(click_btn, node_click, services, types,
+                btn_history, current_fig, path_meta):
     history = json.loads(btn_history)
     paths = json.loads(path_meta)
 
     path_dict = {literal_eval(k): literal_eval(v) for k, v in paths.items()}
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links = get_figure(services)
+        fig, links = get_figure(services, types)
 
         history[click_btn] = 1
         paths = {str(k):str(v) for k, v in links.items()}
