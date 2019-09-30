@@ -69,7 +69,7 @@ def get_figure(service_types=None, customer_types=None):
 
     df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
 
-    df = df[['ORDER_ID_ANON', 'Stage', 'Position']].groupby(['ORDER_ID_ANON', 'Stage']).first()
+    df = df[['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position']].groupby(['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).first()
     df['Link'] = df['Position'].shift(-1)
 
     for ix, l in df.iterrows():

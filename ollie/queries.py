@@ -3,15 +3,15 @@ def default_tree_sql(id_list=[5997992223372343676, 2637488041892950618]):
 
     return f"""WITH CTE as (
       SELECT DISTINCT ORDER_CREATION_DATE ORDER_CREATION_DATE,
-      ORDER_ID_ANON,
+      ORDER_ID_ANON, MSISDN_ANON,
       ACTION_TYPE_DESC
        FROM `bcx-insights.telkom_customerexperience.orders_20190903_00_anon`
        WHERE ACCOUNT_NO_ANON in ({ids})
       )
 
-      SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON ORDER BY ORDER_CREATION_DATE) Stage
+      SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE) Stage
       FROM CTE
-      order by ORDER_ID_ANON, ORDER_CREATION_DATE DESC"""
+      order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
 
 def criteria_tree_sql(service_type, customer_type):
@@ -31,6 +31,7 @@ def criteria_tree_sql(service_type, customer_type):
     return f"""WITH CTE as (
           SELECT DISTINCT ORDER_CREATION_DATE ORDER_CREATION_DATE,
           ORDER_ID_ANON,
+          MSISDN_ANON,
           ACTION_TYPE_DESC
            FROM `bcx-insights.telkom_customerexperience.orders_20190903_00_anon` orders
 
@@ -45,9 +46,9 @@ def criteria_tree_sql(service_type, customer_type):
            {service_types}
           )
 
-          SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON ORDER BY ORDER_CREATION_DATE) Stage
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE) Stage
           FROM CTE
-          order by ORDER_ID_ANON, ORDER_CREATION_DATE DESC"""
+          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
 
 if __name__ == '__main__':
