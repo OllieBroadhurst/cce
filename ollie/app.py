@@ -46,6 +46,7 @@ app.layout = html.Div([
     style={'padding-bottom': '10px'}),
     html.Div(children='{}', id='history', style={'display': 'none'}),
     html.Div(children='{}', id='links', style={'display': 'none'}),
+    html.Div(children='{}', id='times', style={'display': 'none'}),
     html.Div([
         filters,
         graph], className="row")])
@@ -61,16 +62,17 @@ app.layout = html.Div([
     State('customer_type_filter', 'value'),
     State('history', 'children'),
     State('tree_chart', 'figure'),
-    State('links', 'children')])
+    State('links', 'children'),
+    State('times', 'children')])
 def generate_tree(click_btn, node_click, services, types,
-                btn_history, current_fig, path_meta):
+                btn_history, current_fig, path_meta, durations):
     history = json.loads(btn_history)
     paths = json.loads(path_meta)
 
     path_dict = {literal_eval(k): literal_eval(v) for k, v in paths.items()}
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links = get_figure(services, types)
+        fig, links, durations = get_figure(services, types)
 
         history[click_btn] = 1
         paths = {str(k):str(v) for k, v in links.items()}
@@ -91,6 +93,7 @@ def generate_tree(click_btn, node_click, services, types,
             current_fig = format_selection(current_fig, selection)
             current_fig = find_journey(current_fig,
                             path_dict,
+                            durations,
                             node_click['points'][0]['x'],
                             node_click['points'][0]['y'])
 

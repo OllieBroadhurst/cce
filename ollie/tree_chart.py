@@ -37,9 +37,11 @@ def get_figure(service_types=None, customer_types=None):
                     'layout':go.Layout(
                     xaxis=default_axis_params,
                     yaxis=default_axis_params
-                    )}), links
+                    )}), links, {}
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
+
+    df['Duration'] = (df['ORDER_CREATION_DATE'].diff().dt.days > 0) * df['ORDER_CREATION_DATE'].diff().dt.seconds/60
 
     WIDTH = df['Stage'].value_counts().max() * 0.75
     HEIGHT = 5
@@ -69,8 +71,12 @@ def get_figure(service_types=None, customer_types=None):
 
     df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
 
-    df = df[['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position']].groupby(['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).first()
+    df = df[['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
     df['Link'] = df['Position'].shift(-1)
+
+    times = df.groupby(['Position', 'Link']).mean().dropna()
+    times = times.to_dict()['Duration']
+    times = {v[0]: {v: int(round(times[v], 0))} for v in times}
 
     for ix, l in df.iterrows():
       if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
@@ -120,7 +126,7 @@ def get_figure(service_types=None, customer_types=None):
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
 
-    return figure, links
+    return figure, links, times
 
 
 def highlight_route(paths, node):
@@ -143,9 +149,23 @@ def highlight_route(paths, node):
     return route_x, route_y
 
 
-def find_journey(figure, paths, x, y):
+def find_journey(figure, paths, times, x, y):
     route_x, route_y = highlight_route(paths, [(x, y)])
     figure = go.FigureWidget(data=figure)
+
+    time_coords = [v for v in zip(route_x, route_y) if v is not None]
+    print(time_coords)
+    time_coords = [(time_coords[i], time_coords[i + 1]) for i, _ in enumerate(time_coords) if i % 2 == 0]
+
+    for t in time_coords:
+        annotations.append(
+        go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
+                            y = (t[0][1] + t[1][1])/2,
+                            text = str(times[t]))
+                            )
+
+    figure.update_layout(annotations=annotations)
+
     return figure.add_trace(go.Scatter(
     x=route_x, y=route_y,
     line=dict(width=1.5, color='red'),
