@@ -11,7 +11,8 @@ default_axis_params = dict(showgrid=False,
                         showticklabels=False,
                         showline=False)
 
-chart_size = dict(b=40,l=5,r=5,t=40)
+chart_margin = dict(b=40,l=5,r=5,t=40)
+chart_height = 800
 
 def get_figure(service_types=None, customer_types=None):
 
@@ -36,7 +37,8 @@ def get_figure(service_types=None, customer_types=None):
                     },
                     'layout':go.Layout(
                     xaxis=default_axis_params,
-                    yaxis=default_axis_params
+                    yaxis=default_axis_params,
+                    height=chart_height
                     )}), links, {}
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
@@ -44,7 +46,7 @@ def get_figure(service_types=None, customer_types=None):
     df['Duration'] = (df['ORDER_CREATION_DATE'].diff().dt.days > 0) * df['ORDER_CREATION_DATE'].diff().dt.seconds/60
 
     WIDTH = df['Stage'].value_counts().max() * 0.75
-    HEIGHT = 5
+    HEIGHT = 10
 
     TOP = HEIGHT * 0.9
     LEVEL_HEIGHT = HEIGHT // len(df)
@@ -75,8 +77,8 @@ def get_figure(service_types=None, customer_types=None):
     df['Link'] = df['Position'].shift(-1)
 
     times = df.groupby(['Position', 'Link']).mean().dropna()
-    times = times.to_dict()['Duration']
-    times = {v[0]: {v: int(round(times[v], 0))} for v in times}
+    times = times.round(0).astype(int).to_dict()['Duration']
+
 
     for ix, l in df.iterrows():
       if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
@@ -121,7 +123,8 @@ def get_figure(service_types=None, customer_types=None):
                  layout=go.Layout(
                     titlefont_size=16,
                     showlegend=False,
-                    margin=chart_size,
+                    margin=chart_margin,
+                    height=chart_height,
                     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
@@ -153,16 +156,19 @@ def find_journey(figure, paths, times, x, y):
     route_x, route_y = highlight_route(paths, [(x, y)])
     figure = go.FigureWidget(data=figure)
 
-    time_coords = [v for v in zip(route_x, route_y) if v is not None]
-    print(time_coords)
+    annotations = []
+
+    time_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
+
     time_coords = [(time_coords[i], time_coords[i + 1]) for i, _ in enumerate(time_coords) if i % 2 == 0]
 
     for t in time_coords:
-        annotations.append(
-        go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
-                            y = (t[0][1] + t[1][1])/2,
-                            text = str(times[t]))
-                            )
+        if t in times.keys():
+            annotations.append(
+            go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
+                                y = (t[0][1] + t[1][1])/2,
+                                text = str(times[t]) + ' hours')
+                                )
 
     figure.update_layout(annotations=annotations)
 
@@ -179,6 +185,7 @@ def reset_fig(figure):
     figure['data'][1]['marker']['opacity'] = [1] * num_nodes
     figure['data'] = figure['data'][0:2]
 
+    figure['layout']['annotations'] = []
     return figure
 
 
@@ -203,11 +210,6 @@ def format_selection(figure, selection):
 
 
 def default_chart():
-    # empty_scatter = go.Scatter(
-    #     x=[], y=[],
-    #     mode='markers',
-    #     hoverinfo='text',
-    #     marker=dict(size=1))
 
     empty_scatter = {'data':
                 {
@@ -217,6 +219,7 @@ def default_chart():
                 'marker': {'size': 1}
                 },
                 'layout':go.Layout(
+                height=chart_height,
                 xaxis=default_axis_params,
                 yaxis=default_axis_params
                 )}
@@ -225,7 +228,8 @@ def default_chart():
                  layout=go.Layout(
                     titlefont_size=16,
                     showlegend=False,
-                    margin=chart_size,
+                    height=chart_height,
+                    margin=chart_margin,
                     xaxis=default_axis_params,
                     yaxis=default_axis_params)
                     )

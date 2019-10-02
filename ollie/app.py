@@ -18,7 +18,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
-                    style={'float': 'right', 'padding-right': '15px'},
+                    style={'padding-right': '15px', 'display': 'inline-block', 'height': '800px'},
                     className="ten columns")
 
 filters = html.Div([
@@ -49,13 +49,14 @@ app.layout = html.Div([
     html.Div(children='{}', id='times', style={'display': 'none'}),
     html.Div([
         filters,
-        graph], className="row")])
+        graph], style={'height': '800px'})])
 
 
 @app.callback(
     [Output('tree_chart', 'figure'),
     Output('history', 'children'),
-    Output('links', 'children')],
+    Output('links', 'children'),
+    Output('times', 'children')],
     [Input('run_button', 'n_clicks'),
     Input('tree_chart', 'clickData')],
     [State('service_filter', 'value'),
@@ -68,15 +69,18 @@ def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, path_meta, durations):
     history = json.loads(btn_history)
     paths = json.loads(path_meta)
+    durations = json.loads(durations)
 
     path_dict = {literal_eval(k): literal_eval(v) for k, v in paths.items()}
+    durations = {literal_eval(k): literal_eval(v) for k, v in durations.items()}
 
     if str(click_btn) not in history.keys() and click_btn is not None:
         fig, links, durations = get_figure(services, types)
 
         history[click_btn] = 1
         paths = {str(k):str(v) for k, v in links.items()}
-        return fig, json.dumps(history), json.dumps(paths)
+        durations = {str(k):str(v) for k, v in durations.items()}
+        return fig, json.dumps(history), json.dumps(paths), json.dumps(durations)
 
     elif node_click is not None and history.get('1') is not None:
         colours = current_fig['data'][1]['marker']['color']
@@ -97,7 +101,8 @@ def generate_tree(click_btn, node_click, services, types,
                             node_click['points'][0]['x'],
                             node_click['points'][0]['y'])
 
-        return current_fig, json.dumps(history), json.dumps(paths)
+        durations = {str(k):str(v) for k, v in durations.items()}
+        return current_fig, json.dumps(history), json.dumps(paths), json.dumps(durations)
     else:
         raise PreventUpdate
 
