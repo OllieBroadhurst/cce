@@ -18,8 +18,8 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
-                    style={'padding-right': '15px', 'display': 'inline-block', 'height': '800px'},
-                    className="ten columns")
+                    style={'float': 'left', 'width': '85%', 'height': '700px'}#,
+                    )#className="nine columns")
 
 filters = html.Div([
                     html.Div([html.H5(children='Service'),
@@ -45,21 +45,25 @@ filters = html.Div([
                         options=deal_desc())],
                         style={'padding-bottom': '18px'})
                         ],
-                        style={'font-size': '12px'},
+                        style={'font-size': '12px'})#,
                     #'height':'20%'}
-                    className="two columns")
+                    #className="ten columns")
+
+button = html.Div(html.Button('Show', id='run_button',
+            style={'padding-bottom': '20px'}))
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.H1(children='BCX Insights'),
-    html.Div(html.Button('Show', id='run_button'),
-    style={'padding-bottom': '20px'}),
+    html.Div([
+        html.Div([button, filters], style={'width': '15%', 'float': 'left'}),
+    graph]),
     html.Div(children='{}', id='history', style={'display': 'none'}),
     html.Div(children='{}', id='links', style={'display': 'none'}),
     html.Div(children='{}', id='times', style={'display': 'none'}),
-    html.Div(children='{}', id='desc_map', style={'display': 'none'}),
-    html.Div([filters, graph], style={'height': '800px'})])
+    html.Div(children='{}', id='desc_map', style={'display': 'none'})]
+    )
 
 
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
@@ -81,8 +85,7 @@ def generate_tree(click_btn, node_click, services, types,
     paths = json.loads(path_meta)
     durations = json.loads(durations)
 
-
-    path_dict = {literal_eval(k): literal_eval(v) for k, v in paths.items()}
+    path_dict = {literal_eval(k): v for k, v in paths.items()}
     durations = {literal_eval(k): literal_eval(v) for k, v in durations.items()}
 
     if deals is not None:
@@ -93,7 +96,7 @@ def generate_tree(click_btn, node_click, services, types,
         fig, links, durations = get_figure(services, types, deals)
 
         history[click_btn] = 1
-        paths = {str(k):str(v) for k, v in links.items()}
+        paths = {str(k): v for k, v in links.items()}
         durations = {str(k):str(v) for k, v in durations.items()}
 
         return fig, json.dumps(history), json.dumps(paths), json.dumps(durations)
@@ -109,13 +112,16 @@ def generate_tree(click_btn, node_click, services, types,
         if index > len(colours) - 1:
             index = len(colours) - 1
 
+        selection_x = node_click['points'][0]['x']
+        selection_y = node_click['points'][0]['y']
+
         if colours[index] != 'blue':
             current_fig = format_selection(current_fig, selection)
             current_fig = find_journey(current_fig,
                             path_dict,
                             durations,
-                            node_click['points'][0]['x'],
-                            node_click['points'][0]['y'])
+                            selection_x,
+                            selection_y)
 
         durations = {str(k):str(v) for k, v in durations.items()}
         return current_fig, json.dumps(history), json.dumps(paths), json.dumps(durations)

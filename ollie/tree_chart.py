@@ -11,8 +11,8 @@ default_axis_params = dict(showgrid=False,
                         showticklabels=False,
                         showline=False)
 
-chart_margin = dict(b=40,l=5,r=5,t=40)
-chart_height = 800
+chart_margin = dict(b=0,l=5,r=5,t=0)
+chart_height = 700
 
 def get_figure(service_types=None, customer_types=None, deals=None):
 
@@ -54,8 +54,6 @@ def get_figure(service_types=None, customer_types=None, deals=None):
     w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
     h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
 
-
-
     k = 0
     for i in range(df['Stage'].min(), df['Stage'].max() + 1):
         reasons = df.loc[df['Stage'] == i, 'ACTION_TYPE_DESC'].value_counts().to_dict()
@@ -79,14 +77,19 @@ def get_figure(service_types=None, customer_types=None, deals=None):
     times = df.groupby(['Position', 'Link']).mean().dropna()
     times = times.round(0).astype(int).to_dict()['Duration']
 
+    max_stage_count = []
 
     for ix, l in df.iterrows():
       if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
         if l['Position'] not in links.keys():
-          links[l['Position']] = []
+          links[l['Position']] = {'joins':[], 'stage': ix[2]}
 
-        if l['Link'] not in links[l['Position']]:
-          links[l['Position']].append(l['Link'])
+          max_stage_count.append(ix[2])
+
+        if l['Link'] not in links[l['Position']]['joins']:
+          links[l['Position']]['joins'].append(l['Link'])
+
+    max_stage_count = len([s for s in max_stage_count if s == max(max_stage_count)])
 
     colours = ['green'] * len(all_nodes)
 
@@ -97,23 +100,25 @@ def get_figure(service_types=None, customer_types=None, deals=None):
     edge_y = []
 
     for k in links.keys():
-      for v in links[k]:
+      for v in links[k]['joins']:
         edge_x += [v[0], k[0], None]
         edge_y += [v[1], k[1], None]
 
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='#888'),
+        line=dict(width=0.5, color='rgba(0, 0, 0, 0.8)'),
         hoverinfo='none',
         mode='lines')
+
+    labels = [v.replace(' ', '<br>') for v in labels.values()]
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
-        textposition='top center',
-        text = list(labels.values()),
+        textposition=['bottom center'] * (len(labels) - max_stage_count) + ['top center'] * max_stage_count,
+        text = labels,
         hoverinfo='text',
-        hovertext=[str(t) for t in counts.values()],
+        hovertext=[labels[i] + '<br>' + str(t) for i, t in enumerate(counts.values())],
         marker=dict(
             color=colours,
             size=10,
@@ -138,8 +143,10 @@ def highlight_route(paths, node):
 
     def get_route_coords(node):
         for n in node:
+            n = tuple(n)
             if paths.get(n) is not None:
-                for v in paths.get(n):
+                for v in paths[n]['joins']:
+
                     route_x.append([n[0], v[0], None])
                     route_y.append([n[1], v[1], None])
                     get_route_coords([v])
@@ -153,13 +160,13 @@ def highlight_route(paths, node):
 
 
 def find_journey(figure, paths, times, x, y):
+
     route_x, route_y = highlight_route(paths, [(x, y)])
     figure = go.FigureWidget(data=figure)
 
     annotations = []
 
     time_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
-
     time_coords = [(time_coords[i], time_coords[i + 1]) for i, _ in enumerate(time_coords) if i % 2 == 0]
 
     for t in time_coords:
@@ -174,10 +181,10 @@ def find_journey(figure, paths, times, x, y):
                                 ))
 
     figure.update_layout(annotations=annotations)
-
+    figure.data[0].line.color = 'rgba(255, 255, 255, 0.1)'
     return figure.add_trace(go.Scatter(
     x=route_x, y=route_y,
-    line=dict(width=1.5, color='red'),
+    line=dict(width=1.5, color='rgba(255, 0, 0, 0.9)'),
     hoverinfo='none',
     mode='lines'))
 
@@ -186,6 +193,7 @@ def reset_fig(figure):
     num_nodes = len(figure['data'][1]['marker']['color'])
     figure['data'][1]['marker']['color'] = ['green'] * num_nodes
     figure['data'][1]['marker']['opacity'] = [1] * num_nodes
+    figure['data'][0]['line']['color'] = 'rgba(0, 0, 0, 0.8)'
     figure['data'] = figure['data'][0:2]
 
     figure['layout']['annotations'] = []
