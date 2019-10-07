@@ -41,5 +41,30 @@ def customer_type():
 
     return types
 
+
+def deal_desc():
+    type_sql = r"""SELECT distinct DEAL_DESC,
+    TRIM(REGEXP_REPLACE(DEAL_DESC, '(\\(|\\)|\\bR\\d*|\\d*(GB|MB|@|Mbps)|\\s\\d|\\+|\\b\\d\\b)', '')) DEAL
+    FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`"""
+
+    df = pd.io.gbq.read_gbq(type_sql,
+                            project_id='bcx-insights',
+                            dialect='standard').dropna().drop_duplicates()
+
+
+    df['DEAL']  = df['DEAL'] .str.split(' on')
+
+    options = []
+    for r in df['DEAL'] :
+      options.append(r[-1].strip())
+
+    df['DEAL'] = options
+    deal_map = df.groupby('DEAL')['DEAL_DESC'].apply(list)
+    deal_map = deal_map.to_dict()
+
+    options = [{'label': k, 'value': str(v)} for k, v in deal_map.items()]
+
+    return options
+
 if __name__ == '__main__':
     print(service_options())

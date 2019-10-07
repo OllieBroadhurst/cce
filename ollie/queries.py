@@ -1,15 +1,21 @@
-def criteria_tree_sql(service_type, customer_type):
-    if service_type is not None:
-        service_types = ','.join(["'"+s+"'" for s in service_type])
-        service_types = f'and SERVICE_TYPE IN ({service_types})'
-    else:
-        service_types = ''
 
-    if customer_type is not None:
-        customer_types = ','.join(["'"+c+"'" for c in customer_type])
-        customer_types = f'and CUSTOMER_TYPE_DESC IN ({customer_types})'
+def build_query(iterable, field_name):
+    if iterable is not None:
+        if len(iterable) > 0:
+            iterable = ','.join(["'"+s+"'" for s in iterable])
+            iterable = f'and {field_name} IN ({iterable})'
+            return iterable
+        else:
+            return ''
     else:
-        customer_types = ''
+        return ''
+
+
+def criteria_tree_sql(service_type, customer_type, deal_desc):
+
+    service_type = build_query(service_type, 'SERVICE_TYPE')
+    customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
+    deal_desc = build_query(deal_desc, 'DEAL_DESC')
 
 
     return f"""WITH CTE as (
@@ -25,9 +31,10 @@ def criteria_tree_sql(service_type, customer_type):
            `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon`) custs
            ON custs.CUSTOMER_NO_ANON = orders.ACCOUNT_NO_ANON
 
-           WHERE 1 = 1 --ACCOUNT_NO_ANON in (3712302404987549993, 5997992223372343676, 2637488041892950618)
-           {customer_types}
-           {service_types}
+           WHERE 1 = 1
+           {customer_type}
+           {service_type}
+           {deal_desc}
           )
 
           SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE) Stage

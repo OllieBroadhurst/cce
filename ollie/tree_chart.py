@@ -14,7 +14,7 @@ default_axis_params = dict(showgrid=False,
 chart_margin = dict(b=40,l=5,r=5,t=40)
 chart_height = 800
 
-def get_figure(service_types=None, customer_types=None):
+def get_figure(service_types=None, customer_types=None, deals=None):
 
     num_nodes = 0
     links = {}
@@ -23,7 +23,7 @@ def get_figure(service_types=None, customer_types=None):
     counts = {}
     coords_map = {}
 
-    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types),
+    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types, deals),
     project_id='bcx-insights',
     dialect='standard')
 
@@ -118,7 +118,7 @@ def get_figure(service_types=None, customer_types=None):
             color=colours,
             size=10,
             line_width=2))
-
+    #113848880535
     figure = go.FigureWidget(data=[edge_trace, node_trace],
                  layout=go.Layout(
                     titlefont_size=16,
@@ -167,8 +167,11 @@ def find_journey(figure, paths, times, x, y):
             annotations.append(
             go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
                                 y = (t[0][1] + t[1][1])/2,
-                                text = str(times[t]) + ' hours')
-                                )
+                                text = f'<b>{str(times[t])} hours</b>',
+                                font=dict(
+                                color="black",
+                                size=12)
+                                ))
 
     figure.update_layout(annotations=annotations)
 
@@ -195,7 +198,7 @@ def format_selection(figure, selection):
 
     num_nodes = len(figure['data'][1]['marker']['color'])
     colours = ['green'] * num_nodes
-    alphas = [0.2] * num_nodes
+    alphas = [0.1] * num_nodes
 
     if index > len(colours) - 1:
         index = len(colours) - 1
