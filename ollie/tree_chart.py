@@ -14,7 +14,8 @@ default_axis_params = dict(showgrid=False,
 chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 700
 
-def get_figure(service_types=None, customer_types=None, deals=None):
+def get_figure(service_types=None, customer_types=None,
+                deals=None, action_status=None):
 
     num_nodes = 0
     links = {}
@@ -23,7 +24,8 @@ def get_figure(service_types=None, customer_types=None, deals=None):
     counts = {}
     coords_map = {}
 
-    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types, deals),
+    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
+                                            deals, action_status),
     project_id='bcx-insights',
     dialect='standard')
 
@@ -111,6 +113,19 @@ def get_figure(service_types=None, customer_types=None, deals=None):
         mode='lines')
 
     labels = [v.replace(' ', '<br>') for v in labels.values()]
+    hover_labels = []
+
+
+    for i, node in enumerate(all_nodes):
+        
+        if counts[i] <=5:
+            node_df = df[df['Position'] == node]
+            ids = [str(id) for id in node_df.index.get_level_values(0)]
+            devices = [str(dev) for dev in node_df.index.get_level_values(1)]
+
+            hover_labels.append('ID-Device<br>' + '<br>'.join([f'{i[0]} - {i[1]}' for i in zip(ids, devices)]))
+        else:
+            hover_labels.append(labels[i].replace('<br>', ' ') + f'<br>{str(counts[i])}')
 
     node_trace = go.Scatter(
         x=node_x, y=node_y,
@@ -118,7 +133,7 @@ def get_figure(service_types=None, customer_types=None, deals=None):
         textposition=['bottom center'] * (len(labels) - max_stage_count) + ['top center'] * max_stage_count,
         text = labels,
         hoverinfo='text',
-        hovertext=[labels[i] + '<br>' + str(t) for i, t in enumerate(counts.values())],
+        hovertext=hover_labels,
         marker=dict(
             color=colours,
             size=10,

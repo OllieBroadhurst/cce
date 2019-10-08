@@ -52,7 +52,7 @@ def deal_desc():
                             dialect='standard').dropna().drop_duplicates()
 
 
-    df['DEAL']  = df['DEAL'] .str.split(' on')
+    df['DEAL']  = df['DEAL'].str.split(' on')
 
     options = []
     for r in df['DEAL'] :
@@ -63,6 +63,21 @@ def deal_desc():
     deal_map = deal_map.to_dict()
 
     options = [{'label': k, 'value': str(v)} for k, v in deal_map.items()]
+
+    return options
+
+
+def action_status():
+    type_sql = r"""SELECT distinct ACTION_STATUS_DESC
+    FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`"""
+
+    df = pd.io.gbq.read_gbq(type_sql,
+                            project_id='bcx-insights',
+                            dialect='standard').dropna().drop_duplicates()
+
+    df = df['ACTION_STATUS_DESC'].tolist()
+
+    options = [{'label': v, 'value': v} for v in df]
 
     return options
 

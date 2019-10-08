@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 from tree_chart import get_figure, reset_fig, format_selection, find_journey, default_chart
-from filters import service_options, customer_type, deal_desc
+from filters import service_options, customer_type, deal_desc, action_status
 
 import json
 from ast import literal_eval
@@ -43,6 +43,14 @@ filters = html.Div([
                         children='Deal Description',
                         multi=True,
                         options=deal_desc())],
+                        style={'padding-bottom': '18px'}),
+
+                    html.Div([html.H5(children='Final Action Status'),
+                    dcc.Dropdown(
+                        id='action_status_filter',
+                        children='Final Action Status',
+                        multi=True,
+                        options=action_status())],
                         style={'padding-bottom': '18px'})
                         ],
                         style={'font-size': '12px'})#,
@@ -53,6 +61,7 @@ button = html.Div(html.Button('Show', id='run_button',
             style={'padding-bottom': '20px'}))
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
 
 app.layout = html.Div([
     html.H1(children='BCX Insights'),
@@ -74,13 +83,13 @@ inputs = [Input('run_button', 'n_clicks'), Input('tree_chart', 'clickData')]
 states = [State('service_filter', 'value'), State('customer_type_filter', 'value'),
         State('history', 'children'), State('tree_chart', 'figure'),
         State('links', 'children'), State('times', 'children'),
-        State('deal_desc_filter', 'value')]
+        State('deal_desc_filter', 'value'), State('action_status_filter', 'value')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, path_meta, durations,
-                deals):
+                deals, status):
     history = json.loads(btn_history)
     paths = json.loads(path_meta)
     durations = json.loads(durations)
@@ -93,7 +102,7 @@ def generate_tree(click_btn, node_click, services, types,
 
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links, durations = get_figure(services, types, deals)
+        fig, links, durations = get_figure(services, types, deals, status)
 
         history[click_btn] = 1
         paths = {str(k): v for k, v in links.items()}
