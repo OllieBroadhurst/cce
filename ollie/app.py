@@ -5,8 +5,11 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from tree_chart import get_figure, reset_fig, format_selection, find_journey, default_chart
-from filters import service_options, customer_type, deal_desc, action_status
+from tree_chart import get_figure, reset_fig, format_selection,
+                    find_journey, default_chart
+
+from filters import service_options, customer_type,
+                    deal_desc, action_status
 
 import json
 from ast import literal_eval
