@@ -7,7 +7,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from tree_chart import get_figure, reset_fig, format_selection
+from tree_chart import get_figure, reset_fig
 from tree_chart import find_journey, default_chart
 
 from filters import service_options, customer_type
@@ -136,7 +136,6 @@ def generate_tree(click_btn, node_click, services, types,
         selection_y = node_click['points'][0]['y']
 
         if colours[index] != 'blue':
-            current_fig = format_selection(current_fig, selection)
             current_fig = find_journey(current_fig,
                             path_dict,
                             durations,

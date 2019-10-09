@@ -138,7 +138,7 @@ def get_figure(service_types=None, customer_types=None,
             color=colours,
             size=10,
             line_width=2))
-    #113848880535
+
     figure = go.FigureWidget(data=[edge_trace, node_trace],
                  layout=go.Layout(
                     titlefont_size=16,
@@ -179,12 +179,12 @@ def find_journey(figure, paths, times, x, y):
     route_x, route_y = highlight_route(paths, [(x, y)])
     figure = go.FigureWidget(data=figure)
 
+    route_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
+    if len(route_coords) == 0:
+        route_coords = [(x, y)]
+
     annotations = []
-
-    time_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
-    time_coords = [(time_coords[i], time_coords[i + 1]) for i, _ in enumerate(time_coords) if i % 2 == 0]
-
-    for t in time_coords:
+    for t in route_coords:
         if t in times.keys():
             annotations.append(
             go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
@@ -195,13 +195,38 @@ def find_journey(figure, paths, times, x, y):
                                 size=12)
                                 ))
 
-    figure.update_layout(annotations=annotations)
-    figure.data[0].line.color = 'rgba(255, 255, 255, 0.1)'
-    return figure.add_trace(go.Scatter(
-    x=route_x, y=route_y,
-    line=dict(width=1.5, color='rgba(255, 0, 0, 0.9)'),
-    hoverinfo='none',
-    mode='lines'))
+    colours = ['green'] * len(figure['data'][1]['x'])
+
+    coords = list(zip(figure['data'][1]['x'], figure['data'][1]['y']))
+
+    selection_index = coords.index((x, y))
+
+    if figure['data'][1]['marker']['color'][selection_index] != 'blue':
+        alphas = [0.1] * len(figure['data'][1]['x'])
+        for c in route_coords:
+            if c in coords:
+                c_inx = coords.index(c)
+                colours[c_inx] = 'blue'
+                alphas[c_inx] = 0.9
+
+        figure.update_layout(annotations=annotations)
+        figure.data[0].line.color = 'rgba(0, 0, 0, 0.3)'
+
+        figure.add_trace(go.Scatter(
+        x=route_x, y=route_y,
+        line=dict(width=1.5, color='rgba(255, 0, 0, 0.9)'),
+        hoverinfo='none',
+        mode='lines'))
+
+    else:
+        alphas = [0.9] * len(figure['data'][1]['x'])
+        figure['data'] = figure['data'][0:2]
+        figure.data[0].line.color = 'rgba(255, 255, 255, 0.8)'
+
+    figure['data'][1]['marker']['color'] = colours
+    figure['data'][1]['marker']['opacity'] = alphas
+
+    return figure
 
 
 def reset_fig(figure):
@@ -212,26 +237,6 @@ def reset_fig(figure):
     figure['data'] = figure['data'][0:2]
 
     figure['layout']['annotations'] = []
-    return figure
-
-
-def format_selection(figure, selection):
-
-    index = selection['pointIndex']
-
-    num_nodes = len(figure['data'][1]['marker']['color'])
-    colours = ['green'] * num_nodes
-    alphas = [0.1] * num_nodes
-
-    if index > len(colours) - 1:
-        index = len(colours) - 1
-
-    colours[index] = 'blue'
-    alphas[index] = 1
-
-    figure['data'][1]['marker']['color'] = colours
-    figure['data'][1]['marker']['opacity'] = alphas
-
     return figure
 
 
