@@ -15,7 +15,7 @@ chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 700
 
 def get_figure(service_types=None, customer_types=None,
-                deals=None, action_status=None):
+                deals=None, action_status=None, date_val=None):
 
     num_nodes = 0
     links = {}
@@ -25,7 +25,7 @@ def get_figure(service_types=None, customer_types=None,
     coords_map = {}
 
     df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
-                                            deals, action_status),
+                                            deals, action_status, date_val),
     project_id='bcx-insights',
     dialect='standard')
 
@@ -117,7 +117,7 @@ def get_figure(service_types=None, customer_types=None,
 
 
     for i, node in enumerate(all_nodes):
-        
+
         if counts[i] <=5:
             node_df = df[df['Position'] == node]
             ids = [str(id) for id in node_df.index.get_level_values(0)]

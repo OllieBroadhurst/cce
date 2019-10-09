@@ -1,4 +1,6 @@
 
+from datetime import datetime as dt
+
 import pandas as pd
 
 def build_query(iterable, field_name):
@@ -12,6 +14,14 @@ def build_query(iterable, field_name):
     else:
         return ''
 
+def date_query(date_val):
+    min_date_field = "MIN(orders.ORDER_CREATION_DATE)"
+    min_date_criteria = f"""GROUP BY orders.ORDER_CREATION_DATE,
+                        orders.ORDER_ID_ANON, orders.MSISDN_ANON,
+                        orders.ACTION_TYPE_DESC
+                        HAVING {min_date_field} >= '{date_val}'"""
+
+    return f"{min_date_field},", min_date_criteria
 
 def status_query(statuses):
     statuses = ','.join(["'"+s+"'" for s in statuses])
@@ -30,7 +40,8 @@ def status_query(statuses):
 
     return sql, 'last_status_field'
 
-def criteria_tree_sql(service_type, customer_type, deal_desc, action_status):
+def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
+                    date_val):
 
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
@@ -46,8 +57,12 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status):
         action_status = ''
         status_subquery = ''
 
+    if date_val is not None:
+        min_date_field, min_date_criteria = date_query(date_val)
+
     return f"""WITH CTE as (
           SELECT DISTINCT orders.ORDER_CREATION_DATE,
+          {min_date_field}
           orders.ORDER_ID_ANON,
           MSISDN_ANON,
           ACTION_TYPE_DESC
@@ -66,6 +81,8 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status):
            {service_type}
            {deal_desc}
            {action_status}
+
+           {min_date_criteria}
           )
 
           SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE) Stage

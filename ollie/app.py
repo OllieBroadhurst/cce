@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime as dt, timedelta
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from tree_chart import get_figure, reset_fig, format_selection,
-                    find_journey, default_chart
+from tree_chart import get_figure, reset_fig, format_selection
+from tree_chart import find_journey, default_chart
 
-from filters import service_options, customer_type,
-                    deal_desc, action_status
+from filters import service_options, customer_type
+from filters import deal_desc, action_status
 
 import json
 from ast import literal_eval
@@ -30,6 +32,15 @@ filters = html.Div([
                         id='service_filter',
                         children='Service Type',
                         options=service_options())],
+                        style={'padding-bottom': '18px'}),
+
+                    html.Div([html.H5(children='Actions Since'),
+                    dcc.DatePickerSingle(
+                        id='date_filter',
+                        display_format='YYYY-MM-DD',
+                        #month_format='YYYY MMM DD',
+                        placeholder='YYYY-MMM-DD',
+                        date=dt.today() - timedelta(days=60))],
                         style={'padding-bottom': '18px'}),
 
                     html.Div([html.H5(children='Customer Type'),
@@ -55,10 +66,7 @@ filters = html.Div([
                         multi=True,
                         options=action_status())],
                         style={'padding-bottom': '18px'})
-                        ],
-                        style={'font-size': '12px'})#,
-                    #'height':'20%'}
-                    #className="ten columns")
+                        ])
 
 button = html.Div(html.Button('Show', id='run_button',
             style={'padding-bottom': '20px'}))
@@ -86,13 +94,14 @@ inputs = [Input('run_button', 'n_clicks'), Input('tree_chart', 'clickData')]
 states = [State('service_filter', 'value'), State('customer_type_filter', 'value'),
         State('history', 'children'), State('tree_chart', 'figure'),
         State('links', 'children'), State('times', 'children'),
-        State('deal_desc_filter', 'value'), State('action_status_filter', 'value')]
+        State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
+        State('date_filter', 'date')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, path_meta, durations,
-                deals, status):
+                deals, status, date_val):
     history = json.loads(btn_history)
     paths = json.loads(path_meta)
     durations = json.loads(durations)
@@ -105,7 +114,7 @@ def generate_tree(click_btn, node_click, services, types,
 
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links, durations = get_figure(services, types, deals, status)
+        fig, links, durations = get_figure(services, types, deals, status, date_val)
 
         history[click_btn] = 1
         paths = {str(k): v for k, v in links.items()}
