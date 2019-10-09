@@ -182,9 +182,11 @@ def find_journey(figure, paths, times, x, y):
     figure = go.FigureWidget(data=figure)
 
     link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
+
     route_coords = [(link_coords[i], link_coords[i+1]) for i, _ in enumerate(link_coords) if i + 1 < len(link_coords)]
-    if len(route_coords) == 0:
-        route_coords = [(x, y)]
+
+    if len(link_coords) == 0:
+        link_coords = [(x, y)]
 
     colours = ['green'] * len(figure['data'][1]['x'])
 
