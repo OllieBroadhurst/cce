@@ -14,7 +14,7 @@ default_axis_params = dict(showgrid=False,
 chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 700
 
-def get_figure(service_types=None, customer_types=None,
+def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, date_val=None):
 
     num_nodes = 0
@@ -24,10 +24,11 @@ def get_figure(service_types=None, customer_types=None,
     counts = {}
     coords_map = {}
 
-    df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
+    if df is None:
+        df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
                                             deals, action_status, date_val),
-    project_id='bcx-insights',
-    dialect='standard')
+                                            project_id='bcx-insights',
+                                            dialect='standard')
 
     if len(df) == 0:
         return go.FigureWidget({'data':
@@ -164,6 +165,7 @@ def highlight_route(paths, node):
 
                     route_x.append([n[0], v[0], None])
                     route_y.append([n[1], v[1], None])
+
                     get_route_coords([v])
 
     get_route_coords(node)
@@ -179,21 +181,10 @@ def find_journey(figure, paths, times, x, y):
     route_x, route_y = highlight_route(paths, [(x, y)])
     figure = go.FigureWidget(data=figure)
 
-    route_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
+    link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
+    route_coords = [(link_coords[i], link_coords[i+1]) for i, _ in enumerate(link_coords) if i + 1 < len(link_coords)]
     if len(route_coords) == 0:
         route_coords = [(x, y)]
-
-    annotations = []
-    for t in route_coords:
-        if t in times.keys():
-            annotations.append(
-            go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
-                                y = (t[0][1] + t[1][1])/2,
-                                text = f'<b>{str(times[t])} hours</b>',
-                                font=dict(
-                                color="black",
-                                size=12)
-                                ))
 
     colours = ['green'] * len(figure['data'][1]['x'])
 
@@ -203,13 +194,12 @@ def find_journey(figure, paths, times, x, y):
 
     if figure['data'][1]['marker']['color'][selection_index] != 'blue':
         alphas = [0.1] * len(figure['data'][1]['x'])
-        for c in route_coords:
+        for c in link_coords:
             if c in coords:
                 c_inx = coords.index(c)
                 colours[c_inx] = 'blue'
                 alphas[c_inx] = 0.9
 
-        figure.update_layout(annotations=annotations)
         figure.data[0].line.color = 'rgba(0, 0, 0, 0.3)'
 
         figure.add_trace(go.Scatter(
@@ -217,6 +207,19 @@ def find_journey(figure, paths, times, x, y):
         line=dict(width=1.5, color='rgba(255, 0, 0, 0.9)'),
         hoverinfo='none',
         mode='lines'))
+
+        annotations = []
+        for t in times.keys():
+            if t in route_coords:
+                annotations.append(
+                go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
+                                    y = (t[0][1] + t[1][1])/2,
+                                    text = f'<b>{str(times[t])} hours</b>',
+                                    font=dict(
+                                    color="black",
+                                    size=12)
+                                    ))
+        figure.update_layout(annotations=annotations)
 
     else:
         alphas = [0.9] * len(figure['data'][1]['x'])

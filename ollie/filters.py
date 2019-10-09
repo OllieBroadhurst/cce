@@ -28,7 +28,8 @@ def customer_type():
     WHERE CUSTOMER_TYPE_DESC is not NULL AND CUSTOMER_NO_ANON in
 
     (SELECT DISTINCT ACCOUNT_NO_ANON FROM
-    `bcx-insights.telkom_customerexperience.orders_20190903_00_anon`)"""
+    `bcx-insights.telkom_customerexperience.orders_20190903_00_anon`)
+    ORDER BY CUSTOMER_TYPE_DESC"""
 
     types = pd.io.gbq.read_gbq(type_sql,
                                     project_id='bcx-insights',

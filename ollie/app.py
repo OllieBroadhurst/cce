@@ -113,7 +113,7 @@ def generate_tree(click_btn, node_click, services, types,
 
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links, durations = get_figure(services, types, deals, status, date_val)
+        fig, links, durations = get_figure(None, services, types, deals, status, date_val)
 
         history[click_btn] = 1
         paths = {str(k): v for k, v in links.items()}
