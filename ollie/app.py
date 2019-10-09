@@ -85,7 +85,6 @@ app.layout = html.Div([
     html.Div(children='{}', id='desc_map', style={'display': 'none'})]
     )
 
-
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
             Output('links', 'children'), Output('times', 'children')]
 
