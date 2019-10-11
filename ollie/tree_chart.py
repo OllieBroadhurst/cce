@@ -6,13 +6,15 @@ import pandas as pd
 
 from queries import criteria_tree_sql
 
+line_alpha = 0.5
+
 default_axis_params = dict(showgrid=False,
                         zeroline=False,
                         showticklabels=False,
                         showline=False)
 
 chart_margin = dict(b=0,l=5,r=5,t=0)
-chart_height = 700
+chart_height = 600
 
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, date_val=None):
@@ -45,7 +47,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     )}), links, {}
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
-
+    
     df['Duration'] = (df['ORDER_CREATION_DATE'].diff().dt.days > 0) * df['ORDER_CREATION_DATE'].diff().dt.seconds/60
 
     WIDTH = df['Stage'].value_counts().max() * 0.75
@@ -74,11 +76,22 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
 
+    labels = list(labels.values())
+
     df = df[['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
     df['Link'] = df['Position'].shift(-1)
 
+    route_count = df[['Position', 'Link']]
+    route_count['Count'] = 1
+    route_count = route_count.groupby(['Position', 'Link']).sum().to_dict()['Count']
+
     times = df.groupby(['Position', 'Link']).mean().dropna()
     times = times.round(0).astype(int).to_dict()['Duration']
+
+    routes = {k: {'Duration':times[k], 'Count':route_count[k]} for k in times.keys()}
+
+    times = None
+    route_count = None
 
     max_stage_count = []
 
@@ -102,20 +115,23 @@ def get_figure(df=None, service_types=None, customer_types=None,
     edge_x = []
     edge_y = []
 
+    mean_count = np.mean([v['Count'] for v in routes.values()])
+    traces = []
     for k in links.keys():
       for v in links[k]['joins']:
-        edge_x += [v[0], k[0], None]
-        edge_y += [v[1], k[1], None]
 
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='rgba(0, 0, 0, 0.8)'),
-        hoverinfo='none',
-        mode='lines')
+        width = routes[((k[0], k[1]), (v[0], v[1]))]['Count']
+        width = min((1.2 + width/mean_count)**3, 8)
 
-    labels = [v.replace(' ', '<br>') for v in labels.values()]
+        traces.append(go.Scatter(
+            x=[k[0], v[0], None], y=[k[1], v[1], None],
+            line=dict(width=width, color=f'rgba(0, 0, 0, {line_alpha})',
+            shape='spline', smoothing=0.8),
+            hoverinfo='none',
+            mode='lines'))
+
+    newline_labels = [v.replace(' ', '<br>') for v in labels]
     hover_labels = []
-
 
     for i, node in enumerate(all_nodes):
 
@@ -124,23 +140,23 @@ def get_figure(df=None, service_types=None, customer_types=None,
             ids = [str(id) for id in node_df.index.get_level_values(0)]
             devices = [str(dev) for dev in node_df.index.get_level_values(1)]
 
-            hover_labels.append('ID-Device<br>' + '<br>'.join([f'{i[0]} - {i[1]}' for i in zip(ids, devices)]))
+            hover_labels.append(f'{labels[i]}<br>ID-Device<br>' + '<br>'.join([f'{i[0]} - {i[1]}' for i in zip(ids, devices)]))
         else:
-            hover_labels.append(labels[i].replace('<br>', ' ') + f'<br>{str(counts[i])}')
+            hover_labels.append(labels[i] + f'<br>{str(counts[i])}')
 
-    node_trace = go.Scatter(
+    traces.append(go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
         textposition=['bottom center'] * (len(labels) - max_stage_count) + ['top center'] * max_stage_count,
-        text = labels,
+        text = newline_labels,
         hoverinfo='text',
         hovertext=hover_labels,
         marker=dict(
             color=colours,
-            size=10,
-            line_width=2))
+            size=25,
+            line_width=2)))
 
-    figure = go.FigureWidget(data=[edge_trace, node_trace],
+    figure = go.FigureWidget(data=traces,
                  layout=go.Layout(
                     titlefont_size=16,
                     showlegend=False,
@@ -150,7 +166,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
 
-    return figure, links, times
+    return figure, links, routes
 
 
 def highlight_route(paths, node):
@@ -176,72 +192,78 @@ def highlight_route(paths, node):
     return route_x, route_y
 
 
-def find_journey(figure, paths, times, x, y):
+def find_journey(figure, paths, routes, x, y):
 
     route_x, route_y = highlight_route(paths, [(x, y)])
-    figure = go.FigureWidget(data=figure)
 
     link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
-
     route_coords = [(link_coords[i], link_coords[i+1]) for i, _ in enumerate(link_coords) if i + 1 < len(link_coords)]
 
     if len(link_coords) == 0:
         link_coords = [(x, y)]
 
-    colours = ['green'] * len(figure['data'][1]['x'])
+    if figure['data'][-1].get('marker') is None:
+        figure['data'] = figure['data'][:-1]
 
-    coords = list(zip(figure['data'][1]['x'], figure['data'][1]['y']))
-
+    coords = list(zip(figure['data'][-1]['x'], figure['data'][-1]['y']))
     selection_index = coords.index((x, y))
 
-    if figure['data'][1]['marker']['color'][selection_index] != 'blue':
-        alphas = [0.1] * len(figure['data'][1]['x'])
+    if figure['data'][-1]['marker']['color'][selection_index] != 'blue':
+        colours = ['green'] * len(figure['data'][-1]['marker']['color'])
+        alphas = [0.1] * len(figure['data'][-1]['x'])
+
         for c in link_coords:
             if c in coords:
                 c_inx = coords.index(c)
-                colours[c_inx] = 'blue'
-                alphas[c_inx] = 0.9
+                colours[c_inx] = 'orange'
+                alphas[c_inx] = line_alpha
 
-        figure.data[0].line.color = 'rgba(0, 0, 0, 0.3)'
+            colours[selection_index] = 'blue'
+            alphas[selection_index] = 0.9
 
+        figure['data'][-1]['marker']['color'] = colours
+        figure['data'][-1]['marker']['opacity'] = alphas
+
+        for chart in figure['data'][:-1]:
+            chart['line']['color'] = 'rgba(0, 0, 0, 0.3)'
+            figure['layout']['annotations'] = []
+
+        figure = go.FigureWidget(data=figure)
         figure.add_trace(go.Scatter(
         x=route_x, y=route_y,
-        line=dict(width=1.5, color='rgba(255, 0, 0, 0.9)'),
+        line=dict(width=1.5, color=f'rgba(255, 0, 0, 0.9)'),
         hoverinfo='none',
         mode='lines'))
 
         annotations = []
-        for t in times.keys():
+        for t in routes.keys():
             if t in route_coords:
+                customer_counts = f'{str(routes[t]["Count"])} customer'
+                if routes[t]["Count"] > 1 or routes[t]["Count"] == 0:
+                    customer_counts += 's'
+
                 annotations.append(
                 go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
                                     y = (t[0][1] + t[1][1])/2,
-                                    text = f'<b>{str(times[t])} hours</b>',
-                                    font=dict(
-                                    color="black",
-                                    size=12)
+                                    text = f'<b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
+                                    font={'size':14},
+                                    bgcolor='white',
+                                    bordercolor='black'
                                     ))
         figure.update_layout(annotations=annotations)
 
     else:
-        alphas = [0.9] * len(figure['data'][1]['x'])
-        figure['data'] = figure['data'][0:2]
-        figure.data[0].line.color = 'rgba(255, 255, 255, 0.8)'
 
-    figure['data'][1]['marker']['color'] = colours
-    figure['data'][1]['marker']['opacity'] = alphas
+        colours = ['green'] * len(figure['data'][-1]['marker']['color'])
+        alphas = [0.9] * len(figure['data'][-1]['marker']['opacity'])
 
-    return figure
+        for chart in figure['data'][:-1]:
+            chart['line']['color'] = f'rgba(0, 0, 0, {line_alpha})'
 
+        figure['data'][-1]['marker']['color'] = colours
+        figure['data'][-1]['marker']['opacity'] = alphas
+        figure['layout']['annotations'] = []
 
-def reset_fig(figure):
-    num_nodes = len(figure['data'][1]['marker']['color'])
-    figure['data'][1]['marker']['color'] = ['green'] * num_nodes
-    figure['data'][1]['marker']['opacity'] = [1] * num_nodes
-    figure['data'][0]['line']['color'] = 'rgba(0, 0, 0, 0.8)'
-    figure['data'] = figure['data'][0:2]
-
-    figure['layout']['annotations'] = []
     return figure
 
 

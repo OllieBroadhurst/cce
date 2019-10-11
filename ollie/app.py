@@ -7,8 +7,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from tree_chart import get_figure, reset_fig
-from tree_chart import find_journey, default_chart
+from tree_chart import get_figure, find_journey, default_chart
 
 from filters import service_options, customer_type
 from filters import deal_desc, action_status
@@ -23,8 +22,8 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
-                    style={'float': 'left', 'width': '85%', 'height': '700px'}#,
-                    )#className="nine columns")
+                    style={'float': 'left', 'width': '85%', 'height': '600px'}#,
+                    )
 
 filters = html.Div([
                     html.Div([html.H5(children='Service'),
@@ -76,77 +75,75 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.H1(children='BCX Insights'),
-    html.Div([
-        html.Div([button, filters], style={'width': '15%', 'float': 'left'}),
-    graph]),
-    html.Div(children='{}', id='history', style={'display': 'none'}),
-    html.Div(children='{}', id='links', style={'display': 'none'}),
-    html.Div(children='{}', id='times', style={'display': 'none'}),
-    html.Div(children='{}', id='desc_map', style={'display': 'none'})]
+    dcc.Tabs(children=[
+        dcc.Tab(label='Tab one', children=[
+            html.Div([
+                html.Div([button, filters], style={'width': '15%', 'float': 'left'}),
+                graph]),
+            html.Div(children='{}', id='history', style={'display': 'none'}),
+            html.Div(children='{}', id='links', style={'display': 'none'}),
+            html.Div(children='{}', id='routes', style={'display': 'none'}),
+            html.Div(children='{}', id='desc_map', style={'display': 'none'})
+            ],
+            style={'font-size': '10', 'line-height': '5vh'})
+        ],
+        style={'height': '5vh', 'padding': '2vh', })
+    ]
     )
 
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
-            Output('links', 'children'), Output('times', 'children')]
+            Output('links', 'children'), Output('routes', 'children')]
 
 inputs = [Input('run_button', 'n_clicks'), Input('tree_chart', 'clickData')]
 
 states = [State('service_filter', 'value'), State('customer_type_filter', 'value'),
         State('history', 'children'), State('tree_chart', 'figure'),
-        State('links', 'children'), State('times', 'children'),
+        State('links', 'children'), State('routes', 'children'),
         State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
         State('date_filter', 'date')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
-                btn_history, current_fig, path_meta, durations,
+                btn_history, current_fig, links, routes,
                 deals, status, date_val):
     history = json.loads(btn_history)
-    paths = json.loads(path_meta)
-    durations = json.loads(durations)
+    links = json.loads(links)
+    routes = json.loads(routes)
 
-    path_dict = {literal_eval(k): v for k, v in paths.items()}
-    durations = {literal_eval(k): literal_eval(v) for k, v in durations.items()}
+    links = {literal_eval(k): v for k, v in links.items()}
+    routes = {literal_eval(k): literal_eval(v) for k, v in routes.items()}
 
     if deals is not None:
         deals = sum([literal_eval(d) for d in deals], [])
 
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links, durations = get_figure(None, services, types, deals, status, date_val)
+        fig, links, routes = get_figure(None, services, types, deals, status, date_val)
 
         history[click_btn] = 1
-        paths = {str(k): v for k, v in links.items()}
-        durations = {str(k):str(v) for k, v in durations.items()}
+        links = {str(k): v for k, v in links.items()}
+        routes = {str(k):str(v) for k, v in routes.items()}
 
-        return fig, json.dumps(history), json.dumps(paths), json.dumps(durations)
+        return fig, json.dumps(history), json.dumps(links), json.dumps(routes)
 
     elif node_click is not None and history.get('1') is not None:
-        colours = current_fig['data'][1]['marker']['color']
-        num_nodes = len(colours)
-        current_fig = reset_fig(current_fig)
-        selection = node_click['points'][0]
-
-        index = selection['pointIndex']
-
-        if index > len(colours) - 1:
-            index = len(colours) - 1
 
         selection_x = node_click['points'][0]['x']
         selection_y = node_click['points'][0]['y']
 
-        if colours[index] != 'blue':
-            current_fig = find_journey(current_fig,
-                            path_dict,
-                            durations,
-                            selection_x,
-                            selection_y)
+        current_fig = find_journey(current_fig,
+                        links,
+                        routes,
+                        selection_x,
+                        selection_y)
 
-        durations = {str(k):str(v) for k, v in durations.items()}
-        return current_fig, json.dumps(history), json.dumps(paths), json.dumps(durations)
+        links = {str(k): v for k, v in links.items()}
+        routes = {str(k):str(v) for k, v in routes.items()}
+        return current_fig, json.dumps(history), json.dumps(links), json.dumps(routes)
     else:
         raise PreventUpdate
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
