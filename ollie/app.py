@@ -9,8 +9,8 @@ from dash.exceptions import PreventUpdate
 
 from tree_chart import get_figure, find_journey, default_chart
 
-from filters import service_options, customer_type
-from filters import deal_desc, action_status
+from filters import service_options, customer_type, has_dispute
+from filters import deal_desc, action_status, action_type
 
 import json
 from ast import literal_eval
@@ -22,7 +22,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
-                    style={'float': 'left', 'width': '85%', 'height': '600px'}#,
+                    style={'float': 'left', 'width': '82%', 'height': '600px'}#,
                     )
 
 filters = html.Div([
@@ -37,7 +37,6 @@ filters = html.Div([
                     dcc.DatePickerSingle(
                         id='date_filter',
                         display_format='YYYY-MM-DD',
-                        #month_format='YYYY MMM DD',
                         placeholder='YYYY-MMM-DD',
                         date=dt.today() - timedelta(days=60))],
                         style={'padding-bottom': '18px'}),
@@ -64,8 +63,25 @@ filters = html.Div([
                         children='Final Action Status',
                         multi=True,
                         options=action_status())],
+                        style={'padding-bottom': '18px'}),
+
+                    html.Div([html.H5(children='Final Action'),
+                    dcc.Dropdown(
+                        id='final_action_filter',
+                        children='Final Action Type',
+                        multi=True,
+                        options=action_type())],
+                        style={'padding-bottom': '18px'}),
+
+                    html.Div([html.H5(children='Has Dispute'),
+                    dcc.Dropdown(
+                        id='dispute_filter',
+                        children='Has Dispute',
+                        multi=False,
+                        value='Either',
+                        options=has_dispute())],
                         style={'padding-bottom': '18px'})
-                        ])
+                        ], style={'overflow-y':'scroll', 'height':'600px'})
 
 button = html.Div(html.Button('Show', id='run_button',
             style={'padding-bottom': '20px'}))
@@ -75,20 +91,15 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.H1(children='BCX Insights'),
-    dcc.Tabs(children=[
-        dcc.Tab(label='Tab one', children=[
+
             html.Div([
-                html.Div([button, filters], style={'width': '15%', 'float': 'left'}),
+                html.Div([button, filters], style={'width': '17%', 'float': 'left'}),
                 graph]),
             html.Div(children='{}', id='history', style={'display': 'none'}),
             html.Div(children='{}', id='links', style={'display': 'none'}),
             html.Div(children='{}', id='routes', style={'display': 'none'}),
             html.Div(children='{}', id='desc_map', style={'display': 'none'})
-            ],
-            style={'font-size': '10', 'line-height': '5vh'})
-        ],
-        style={'height': '5vh', 'padding': '2vh', })
-    ]
+            ]
     )
 
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
@@ -100,13 +111,15 @@ states = [State('service_filter', 'value'), State('customer_type_filter', 'value
         State('history', 'children'), State('tree_chart', 'figure'),
         State('links', 'children'), State('routes', 'children'),
         State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
-        State('date_filter', 'date')]
+        State('date_filter', 'date'), State('dispute_filter', 'value'),
+        State('final_action_filter', 'value')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, links, routes,
-                deals, status, date_val):
+                deals, status, date_val, dispute_val,
+                action_filter):
     history = json.loads(btn_history)
     links = json.loads(links)
     routes = json.loads(routes)
@@ -119,7 +132,8 @@ def generate_tree(click_btn, node_click, services, types,
 
 
     if str(click_btn) not in history.keys() and click_btn is not None:
-        fig, links, routes = get_figure(None, services, types, deals, status, date_val)
+        fig, links, routes = get_figure(None, services, types, deals, status,
+                                        date_val, dispute_val, action_filter)
 
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}

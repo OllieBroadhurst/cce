@@ -17,7 +17,8 @@ chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 600
 
 def get_figure(df=None, service_types=None, customer_types=None,
-                deals=None, action_status=None, date_val=None):
+                deals=None, action_status=None, date_val=None,
+                dispute_val=None, action_filter=None):
 
     num_nodes = 0
     links = {}
@@ -28,7 +29,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     if df is None:
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
-                                            deals, action_status, date_val),
+                                            deals, action_status, date_val,
+                                            dispute_val, action_filter),
                                             project_id='bcx-insights',
                                             dialect='standard')
 
@@ -47,7 +49,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     )}), links, {}
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
-    
+
     df['Duration'] = (df['ORDER_CREATION_DATE'].diff().dt.days > 0) * df['ORDER_CREATION_DATE'].diff().dt.seconds/60
 
     WIDTH = df['Stage'].value_counts().max() * 0.75

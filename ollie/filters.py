@@ -43,6 +43,12 @@ def customer_type():
     return types
 
 
+def has_dispute():
+    return [{'label': 'Either', 'value': 'Either'},
+            {'label': 'Yes', 'value': 'Yes'},
+            {'label': 'No', 'value': 'No'}]
+
+
 def deal_desc():
     type_sql = r"""SELECT distinct DEAL_DESC,
     TRIM(REGEXP_REPLACE(DEAL_DESC, '(\\(|\\)|\\bR\\d*|\\d*(GB|MB|@|Mbps)|\\s\\d|\\+|\\b\\d\\b)', '')) DEAL
@@ -70,13 +76,30 @@ def deal_desc():
 
 def action_status():
     type_sql = r"""SELECT distinct ACTION_STATUS_DESC
-    FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`"""
+    FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+    ORDER BY ACTION_STATUS_DESC"""
 
     df = pd.io.gbq.read_gbq(type_sql,
                             project_id='bcx-insights',
                             dialect='standard').dropna().drop_duplicates()
 
     df = df['ACTION_STATUS_DESC'].tolist()
+
+    options = [{'label': v, 'value': v} for v in df]
+
+    return options
+
+
+def action_type():
+    type_sql = r"""SELECT distinct ACTION_TYPE_DESC
+    FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+    order by ACTION_TYPE_DESC"""
+
+    df = pd.io.gbq.read_gbq(type_sql,
+                            project_id='bcx-insights',
+                            dialect='standard').dropna().drop_duplicates()
+
+    df = df['ACTION_TYPE_DESC'].tolist()
 
     options = [{'label': v, 'value': v} for v in df]
 
