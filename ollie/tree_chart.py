@@ -134,13 +134,13 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     ayref='y',
                     showarrow=True,
                     arrowhead=2,
-                    arrowwidth=width,
+                    arrowwidth=min(width, 6),
                     arrowcolor=f'rgba(0, 0, 0, {line_alpha})',
                     x=v[0],
                     y=v[1],
                     xref='x',
                     yref='y',
-                    standoff = 10))
+                    standoff = 15))
 
     newline_labels = [v.replace(' ', '<br>') for v in labels]
     hover_labels = []
@@ -242,12 +242,12 @@ def find_journey(figure, paths, routes, x, y):
         figure['layout']['annotations'] = reset_annotaions
 
         for line in figure['layout']['annotations']:
-            line['arrowcolor'] = f'rgba(0, 0, 0, 0.3)'
+            line['arrowcolor'] = f'rgba(0, 0, 0, 0.2)'
 
         figure = go.FigureWidget(data=figure)
         figure.add_trace(go.Scatter(
         x=route_x, y=route_y,
-        line=dict(width=2, color=f'rgba(255, 0, 0, 0.9)'),
+        line=dict(width=3, color=f'rgba(255, 0, 0, 0.9)'),
         hoverinfo='none',
         mode='lines'))
 
