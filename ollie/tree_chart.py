@@ -117,20 +117,30 @@ def get_figure(df=None, service_types=None, customer_types=None,
     edge_x = []
     edge_y = []
 
+    arrows = []
+
     mean_count = np.mean([v['Count'] for v in routes.values()])
-    traces = []
+
     for k in links.keys():
       for v in links[k]['joins']:
 
         width = routes[((k[0], k[1]), (v[0], v[1]))]['Count']
         width = min((1.2 + width/mean_count)**3, 8)
 
-        traces.append(go.Scatter(
-            x=[k[0], v[0], None], y=[k[1], v[1], None],
-            line=dict(width=width, color=f'rgba(0, 0, 0, {line_alpha})',
-            shape='spline', smoothing=0.8),
-            hoverinfo='none',
-            mode='lines'))
+        arrows.append(dict(
+                    ax=k[0],
+                    ay=k[1],
+                    axref='x',
+                    ayref='y',
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowwidth=width,
+                    arrowcolor=f'rgba(0, 0, 0, {line_alpha})',
+                    x=v[0],
+                    y=v[1],
+                    xref='x',
+                    yref='y',
+                    standoff = 10))
 
     newline_labels = [v.replace(' ', '<br>') for v in labels]
     hover_labels = []
@@ -146,7 +156,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
         else:
             hover_labels.append(labels[i] + f'<br>{str(counts[i])}')
 
-    traces.append(go.Scatter(
+    traces = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
         textposition=['bottom center'] * (len(labels) - max_stage_count) + ['top center'] * max_stage_count,
@@ -156,7 +166,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
         marker=dict(
             color=colours,
             size=25,
-            line_width=2)))
+            line_width=2))
 
     figure = go.FigureWidget(data=traces,
                  layout=go.Layout(
@@ -165,7 +175,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     margin=chart_margin,
                     height=chart_height,
                     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                    annotations=arrows)
                     )
 
     return figure, links, routes
@@ -207,10 +218,10 @@ def find_journey(figure, paths, routes, x, y):
     if figure['data'][-1].get('marker') is None:
         figure['data'] = figure['data'][:-1]
 
-    coords = list(zip(figure['data'][-1]['x'], figure['data'][-1]['y']))
+    coords = list(zip(figure['data'][0]['x'], figure['data'][-1]['y']))
     selection_index = coords.index((x, y))
 
-    if figure['data'][-1]['marker']['color'][selection_index] != 'blue':
+    if figure['data'][0]['marker']['color'][selection_index] != 'blue':
         colours = ['green'] * len(figure['data'][-1]['marker']['color'])
         alphas = [0.1] * len(figure['data'][-1]['x'])
 
@@ -223,21 +234,25 @@ def find_journey(figure, paths, routes, x, y):
             colours[selection_index] = 'blue'
             alphas[selection_index] = 0.9
 
-        figure['data'][-1]['marker']['color'] = colours
-        figure['data'][-1]['marker']['opacity'] = alphas
+        figure['data'][0]['marker']['color'] = colours
+        figure['data'][0]['marker']['opacity'] = alphas
 
-        for chart in figure['data'][:-1]:
-            chart['line']['color'] = 'rgba(0, 0, 0, 0.3)'
-            figure['layout']['annotations'] = []
+        reset_annotaions = [a for a in figure['layout']['annotations'] if 'text' not in a.keys()]
+
+        figure['layout']['annotations'] = reset_annotaions
+
+        for line in figure['layout']['annotations']:
+            line['arrowcolor'] = f'rgba(0, 0, 0, 0.3)'
 
         figure = go.FigureWidget(data=figure)
         figure.add_trace(go.Scatter(
         x=route_x, y=route_y,
-        line=dict(width=1.5, color=f'rgba(255, 0, 0, 0.9)'),
+        line=dict(width=2, color=f'rgba(255, 0, 0, 0.9)'),
         hoverinfo='none',
         mode='lines'))
 
-        annotations = []
+        annotations = list(figure['layout']['annotations'])
+
         for t in routes.keys():
             if t in route_coords:
                 customer_counts = f'{str(routes[t]["Count"])} customer'
@@ -256,15 +271,17 @@ def find_journey(figure, paths, routes, x, y):
 
     else:
 
-        colours = ['green'] * len(figure['data'][-1]['marker']['color'])
-        alphas = [0.9] * len(figure['data'][-1]['marker']['opacity'])
+        colours = ['green'] * len(figure['data'][0]['marker']['color'])
+        alphas = [0.9] * len(figure['data'][0]['marker']['opacity'])
 
-        for chart in figure['data'][:-1]:
-            chart['line']['color'] = f'rgba(0, 0, 0, {line_alpha})'
+        figure['data'][0]['marker']['color'] = colours
+        figure['data'][0]['marker']['opacity'] = alphas
 
-        figure['data'][-1]['marker']['color'] = colours
-        figure['data'][-1]['marker']['opacity'] = alphas
-        figure['layout']['annotations'] = []
+        reset_annotaions = [a for a in figure['layout']['annotations'] if 'text' not in a.keys()]
+        figure['layout']['annotations'] = reset_annotaions
+
+        for line in figure['layout']['annotations']:
+            line['arrowcolor'] = f'rgba(0, 0, 0, {line_alpha})'
 
     return figure
 

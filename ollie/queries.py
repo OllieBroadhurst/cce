@@ -36,7 +36,6 @@ def dispute_query(dispute_val, date_val):
         return '', ''
 
 
-
 def date_query(date_val):
     min_date_field = "MIN(orders.ORDER_CREATION_DATE)"
     min_date_criteria = f"""GROUP BY orders.ORDER_CREATION_DATE,
@@ -46,6 +45,7 @@ def date_query(date_val):
 
     return f"{min_date_field},", min_date_criteria
 
+
 def last_status_or_action_query(statuses, actions):
 
     status_field, status_where, status_group = '', '', ''
@@ -54,19 +54,22 @@ def last_status_or_action_query(statuses, actions):
     if statuses is not None:
         if len(statuses) > 0:
             status_field = """LAST_VALUE(ACTION_STATUS_DESC) OVER
-            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE
+            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE, ACTION_TYPE_DESC
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_status_field,"""
             status_where = build_query(statuses, 'last_status_field')
             status_group = "ACTION_STATUS_DESC, "
 
     if actions is not None:
         if len(actions) > 0:
+            actions = [a.lower() for a in actions]
+
             action_field = """LAST_VALUE(ACTION_TYPE_DESC) OVER
-            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE
+            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE, ACTION_TYPE_DESC
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_action_type,"""
 
             action_group = "ACTION_TYPE_DESC, "
             action_where = build_query(actions, 'last_action_type')
+            action_where = action_where.replace('last_action_type', "lower(last_action_type)")
 
     sql = f"""LEFT join
            (
@@ -123,11 +126,9 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            {min_date_criteria}
           )
 
-          SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE) Stage
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE, ACTION_TYPE_DESC) Stage
           FROM CTE
-          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
-
-    print(query)
+          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC, ACTION_TYPE_DESC"""
 
     return query
 

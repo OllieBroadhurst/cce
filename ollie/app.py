@@ -18,7 +18,8 @@ from ast import literal_eval
 
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
+header_style = {'font-size': 12}
+filter_style = {'padding-bottom': '18px', 'font-size': 12}
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
@@ -26,62 +27,62 @@ graph = html.Div(dcc.Graph(id='tree_chart',
                     )
 
 filters = html.Div([
-                    html.Div([html.H5(children='Service'),
+                    html.Div([html.H5(children='Service', style=header_style),
                     dcc.Checklist(
                         id='service_filter',
                         children='Service Type',
                         options=service_options())],
-                        style={'padding-bottom': '18px'}),
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Actions Since'),
+                    html.Div([html.H5(children='Actions Since', style=header_style),
                     dcc.DatePickerSingle(
                         id='date_filter',
                         display_format='YYYY-MM-DD',
                         placeholder='YYYY-MMM-DD',
-                        date=dt.today() - timedelta(days=60))],
-                        style={'padding-bottom': '18px'}),
+                        date=(dt.today() - timedelta(days=60)).date())],
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Customer Type'),
+                    html.Div([html.H5(children='Customer Type', style=header_style),
                     dcc.Dropdown(
                         id='customer_type_filter',
                         children='Customer Type',
                         multi=True,
                         options=customer_type())],
-                        style={'padding-bottom': '18px'}),
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Deal Description'),
+                    html.Div([html.H5(children='Deal Description', style=header_style),
                     dcc.Dropdown(
                         id='deal_desc_filter',
                         children='Deal Description',
                         multi=True,
                         options=deal_desc())],
-                        style={'padding-bottom': '18px'}),
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Final Action Status'),
+                    html.Div([html.H5(children='Final Action Status', style=header_style),
                     dcc.Dropdown(
                         id='action_status_filter',
                         children='Final Action Status',
                         multi=True,
                         options=action_status())],
-                        style={'padding-bottom': '18px'}),
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Final Action'),
+                    html.Div([html.H5(children='Final Action', style=header_style),
                     dcc.Dropdown(
                         id='final_action_filter',
                         children='Final Action Type',
                         multi=True,
                         options=action_type())],
-                        style={'padding-bottom': '18px'}),
+                        style=filter_style),
 
-                    html.Div([html.H5(children='Has Dispute'),
+                    html.Div([html.H5(children='Has Dispute', style=header_style),
                     dcc.Dropdown(
                         id='dispute_filter',
                         children='Has Dispute',
                         multi=False,
                         value='Either',
                         options=has_dispute())],
-                        style={'padding-bottom': '18px'})
-                        ], style={'overflow-y':'scroll', 'height':'600px'})
+                        style=filter_style)
+                        ], style={'overflow-y':'scroll', 'height':'620px'})
 
 button = html.Div(html.Button('Show', id='run_button',
             style={'padding-bottom': '20px'}))

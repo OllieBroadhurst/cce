@@ -97,9 +97,11 @@ def action_type():
 
     df = pd.io.gbq.read_gbq(type_sql,
                             project_id='bcx-insights',
-                            dialect='standard').dropna().drop_duplicates()
+                            dialect='standard')
 
-    df = df['ACTION_TYPE_DESC'].tolist()
+    df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].str.title().drop_duplicates()
+
+    df = df['ACTION_TYPE_DESC'].dropna().tolist()
 
     options = [{'label': v, 'value': v} for v in df]
 
