@@ -80,7 +80,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     labels = list(labels.values())
 
-    df = df[['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
+    df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
     df['Link'] = df['Position'].shift(-1)
 
     route_count = df[['Position', 'Link']]
@@ -144,15 +144,16 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     newline_labels = [v.replace(' ', '<br>') for v in labels]
     hover_labels = []
-
+    print(df)
     for i, node in enumerate(all_nodes):
 
         if counts[i] <=5:
             node_df = df[df['Position'] == node]
-            ids = [str(id) for id in node_df.index.get_level_values(0)]
-            devices = [str(dev) for dev in node_df.index.get_level_values(1)]
+            accs = [str(acc) for acc in node_df.index.get_level_values(0)]
+            ids = [str(id) for id in node_df.index.get_level_values(1)]
+            devices = [str(dev) for dev in node_df.index.get_level_values(2)]
 
-            hover_labels.append(f'{labels[i]}<br>ID-Device<br>' + '<br>'.join([f'{i[0]} - {i[1]}' for i in zip(ids, devices)]))
+            hover_labels.append(f'{labels[i]}<br>Account - ID - Device<br>' + '<br>'.join([f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
         else:
             hover_labels.append(labels[i] + f'<br>{str(counts[i])}')
 
@@ -267,6 +268,7 @@ def find_journey(figure, paths, routes, x, y):
                                     bgcolor='white',
                                     bordercolor='black'
                                     ))
+
         figure.update_layout(annotations=annotations)
 
     else:

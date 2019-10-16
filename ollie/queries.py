@@ -40,7 +40,7 @@ def date_query(date_val):
     min_date_field = "MIN(orders.ORDER_CREATION_DATE)"
     min_date_criteria = f"""GROUP BY orders.ORDER_CREATION_DATE,
                         orders.ORDER_ID_ANON, orders.MSISDN_ANON,
-                        orders.ACTION_TYPE_DESC
+                        orders.ACTION_TYPE_DESC, ACCOUNT_NO_ANON
                         HAVING {min_date_field} >= '{date_val}'"""
 
     return f"{min_date_field},", min_date_criteria
@@ -99,7 +99,9 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
         min_date_field, min_date_criteria = date_query(date_val)
 
     query = f"""WITH CTE as (
-          SELECT DISTINCT orders.ORDER_CREATION_DATE,
+          SELECT DISTINCT
+          orders.ACCOUNT_NO_ANON,
+          orders.ORDER_CREATION_DATE,
           {min_date_field}
           orders.ORDER_ID_ANON,
           orders.MSISDN_ANON,
