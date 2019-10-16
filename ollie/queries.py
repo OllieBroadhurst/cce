@@ -22,10 +22,10 @@ def dispute_query(dispute_val, date_val):
         WHERE RESOLUTION_DATE > '{date_val}') disputes
         on orders.ACCOUNT_NO_ANON = disputes.dispute_id"""
 
-    if dispute_val[0] == 'Yes':
+    if dispute_val == 'Yes':
         join_type = 'JOIN '
         return join_type + sql, ''
-    elif dispute_val[0] == 'No':
+    elif dispute_val == 'No':
         join_type = 'LEFT JOIN '
 
         return join_type + sql, "AND dispute_id is Null"
@@ -40,10 +40,10 @@ def fault_query(fault_val, date_val):
         WHERE DATDRGT > '{date_val}') faults
         on orders.ACCOUNT_NO_ANON = faults.fault_id"""
 
-    if fault_val[0] == 'Yes':
+    if fault_val == 'Yes':
         join_type = 'JOIN '
         return join_type + sql, ''
-    elif fault_val[0] == 'No':
+    elif fault_val == 'No':
         join_type = 'LEFT JOIN '
 
         return join_type + sql, "AND fault_id is Null"
@@ -132,7 +132,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
 
            {dispute_join}
            {fault_join}
-           
+
            {action_status_subquery}
 
            WHERE 1 = 1

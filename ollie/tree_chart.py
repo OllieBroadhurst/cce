@@ -78,6 +78,9 @@ def get_figure(df=None, service_types=None, customer_types=None,
     df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
     df['Link'] = df['Position'].shift(-1)
 
+    df = df.sort_index(level=['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage'],
+    ascending=[False, True, True, True])
+
     counts = df['Position'].value_counts().to_dict()
     for k, v in counts.items():
         all_nodes[k]['count'] = v
@@ -187,8 +190,6 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     annotations=arrows)
                     )
 
-    print(links)
-
     return figure, links, routes
 
 
@@ -272,7 +273,7 @@ def find_journey(figure, paths, routes, x, y):
                 annotations.append(
                 go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
                                     y = (t[0][1] + t[1][1])/2,
-                                    text = f'{t}<br><b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
+                                    text = f'<b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
                                     font={'size':14},
                                     bgcolor='white',
                                     bordercolor='black'

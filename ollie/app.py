@@ -19,7 +19,7 @@ from ast import literal_eval
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 header_style = {'font-size': 12}
-filter_style = {'padding-bottom': '18px', 'font-size': 12}
+filter_style = {'padding-bottom': '10px', 'font-size': 12}
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart()),
