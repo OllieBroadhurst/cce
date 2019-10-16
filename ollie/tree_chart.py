@@ -21,9 +21,10 @@ def get_figure(df=None, service_types=None, customer_types=None,
                 dispute_val=None, action_filter=None):
 
     num_nodes = 0
+    hover_item_limit = 5
+    all_nodes = {}
     links = {}
-    labels = {}
-    coords = {}
+    coords = []
     counts = {}
     coords_map = {}
 
@@ -61,27 +62,27 @@ def get_figure(df=None, service_types=None, customer_types=None,
     w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
     h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
 
-    k = 0
     for i in range(df['Stage'].min(), df['Stage'].max() + 1):
         reasons = df.loc[df['Stage'] == i, 'ACTION_TYPE_DESC'].value_counts().to_dict()
 
         for j, r in enumerate(reasons.keys()):
-            counts[k] = reasons[r]
-            labels[k] = r
-            coords[k] = (w_spacing[i] * (j + 0.5), TOP - i * h_spacing)
-            coords_map[(i, r)] = coords[k]
-            k += 1
+            coords = (w_spacing[i] * (j + 0.5), TOP - i * h_spacing)
+            all_nodes[coords] = {'label': r, 'stage': i}
 
-    all_nodes = list(coords.values())
+    all_stages = [v['stage'] for v in all_nodes.values()]
+    all_labels = [v['label'] for v in all_nodes.values()]
 
-    coords_map = pd.Series(coords_map, name='Position')
+    coords_map = pd.Series(list(all_nodes.keys()), index=[all_stages, all_labels], name='Position')
 
     df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
 
-    labels = list(labels.values())
-
     df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
     df['Link'] = df['Position'].shift(-1)
+
+    counts = df['Position'].value_counts().to_dict()
+    for k, v in counts.items():
+        all_nodes[k]['count'] = v
+    counts = None
 
     route_count = df[['Position', 'Link']]
     route_count['Count'] = 1
@@ -89,6 +90,10 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     times = df.groupby(['Position', 'Link']).mean().dropna()
     times = times.round(0).astype(int).to_dict()['Duration']
+
+
+    route_count = {k: v for k, v in route_count.items() if k[0][1] > k[1][1]}
+    times = {k: v for k, v in times.items() if k[0][1] > k[1][1]}
 
     routes = {k: {'Duration':times[k], 'Count':route_count[k]} for k in times.keys()}
 
@@ -98,21 +103,21 @@ def get_figure(df=None, service_types=None, customer_types=None,
     max_stage_count = []
 
     for ix, l in df.iterrows():
-      if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
-        if l['Position'] not in links.keys():
-          links[l['Position']] = {'joins':[], 'stage': ix[2]}
+        if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
+            if l['Position'] not in links.keys():
+                links[l['Position']] = {'joins':[], 'stage': ix[3]}
 
-          max_stage_count.append(ix[2])
+            max_stage_count.append(ix[3])
 
-        if l['Link'] not in links[l['Position']]['joins']:
-          links[l['Position']]['joins'].append(l['Link'])
+            if l['Link'] not in links[l['Position']]['joins']:
+                links[l['Position']]['joins'].append(l['Link'])
 
     max_stage_count = len([s for s in max_stage_count if s == max(max_stage_count)])
 
-    colours = ['green'] * len(all_nodes)
+    colours = ['green'] * len(all_labels)
 
-    node_x = [x[0] for x in all_nodes]
-    node_y = [y[1] for y in all_nodes]
+    node_x = [x[0] for x in all_nodes.keys()]
+    node_y = [y[1] for y in all_nodes.keys()]
 
     edge_x = []
     edge_y = []
@@ -121,46 +126,49 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
 
-    for k in links.keys():
-      for v in links[k]['joins']:
+    for k, v in routes.items():
 
-        width = routes[((k[0], k[1]), (v[0], v[1]))]['Count']
+        width = v['Count']
+
         width = min((1.2 + width/mean_count)**3, 8)
 
         arrows.append(dict(
-                    ax=k[0],
-                    ay=k[1],
+                    ax=k[0][0],
+                    ay=k[0][1],
                     axref='x',
                     ayref='y',
                     showarrow=True,
                     arrowhead=2,
                     arrowwidth=min(width, 6),
                     arrowcolor=f'rgba(0, 0, 0, {line_alpha})',
-                    x=v[0],
-                    y=v[1],
+                    x=k[1][0],
+                    y=k[1][1],
                     xref='x',
                     yref='y',
                     standoff = 15))
 
-    newline_labels = [v.replace(' ', '<br>') for v in labels]
-    hover_labels = []
-    print(df)
-    for i, node in enumerate(all_nodes):
 
-        if counts[i] <=5:
+    newline_labels = [v.replace(' ', '<br>') for v in all_labels]
+    hover_labels = []
+
+    for node, v in all_nodes.items():
+        lab = v['label']
+        if v['count'] <= hover_item_limit:
             node_df = df[df['Position'] == node]
             accs = [str(acc) for acc in node_df.index.get_level_values(0)]
             ids = [str(id) for id in node_df.index.get_level_values(1)]
             devices = [str(dev) for dev in node_df.index.get_level_values(2)]
 
-            hover_labels.append(f'{labels[i]}<br>Account - ID - Device<br>' + '<br>'.join([f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
+            all_nodes[node]['accounts'] = accs
+
+            hover_labels.append(f'{lab}<br>Account - ID - Device<br>' + '<br>'.join([f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
         else:
-            hover_labels.append(labels[i] + f'<br>{str(counts[i])}')
+            hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
     traces = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
-        textposition=['bottom center'] * (len(labels) - max_stage_count) + ['top center'] * max_stage_count,
+        textposition=['bottom center'] * (len(all_labels) - max_stage_count) + ['top center'] * max_stage_count,
         text = newline_labels,
         hoverinfo='text',
         hovertext=hover_labels,
@@ -179,6 +187,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                     annotations=arrows)
                     )
+
+    print(links)
 
     return figure, links, routes
 
@@ -219,12 +229,12 @@ def find_journey(figure, paths, routes, x, y):
     if figure['data'][-1].get('marker') is None:
         figure['data'] = figure['data'][:-1]
 
-    coords = list(zip(figure['data'][0]['x'], figure['data'][-1]['y']))
+    coords = list(zip(figure['data'][0]['x'], figure['data'][0]['y']))
     selection_index = coords.index((x, y))
 
     if figure['data'][0]['marker']['color'][selection_index] != 'blue':
-        colours = ['green'] * len(figure['data'][-1]['marker']['color'])
-        alphas = [0.1] * len(figure['data'][-1]['x'])
+        colours = ['green'] * len(figure['data'][0]['marker']['color'])
+        alphas = [0.1] * len(figure['data'][0]['x'])
 
         for c in link_coords:
             if c in coords:
@@ -256,14 +266,14 @@ def find_journey(figure, paths, routes, x, y):
 
         for t in routes.keys():
             if t in route_coords:
-                customer_counts = f'{str(routes[t]["Count"])} customer'
+                customer_counts = f'{str(routes[t]["Count"])} order'
                 if routes[t]["Count"] > 1 or routes[t]["Count"] == 0:
                     customer_counts += 's'
 
                 annotations.append(
                 go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
                                     y = (t[0][1] + t[1][1])/2,
-                                    text = f'<b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
+                                    text = f'{t}<br><b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
                                     font={'size':14},
                                     bgcolor='white',
                                     bordercolor='black'
