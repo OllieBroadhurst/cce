@@ -16,22 +16,37 @@ def build_query(iterable, field_name):
 
 
 def dispute_query(dispute_val, date_val):
+    sql = f"""
+        (SELECT DISTINCT ACCOUNT_NO_ANON dispute_id FROM
+        `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
+        WHERE RESOLUTION_DATE > '{date_val}') disputes
+        on orders.ACCOUNT_NO_ANON = disputes.dispute_id"""
+
     if dispute_val[0] == 'Yes':
-        sql = f"""JOIN
-        (SELECT DISTINCT ACCOUNT_NO_ANON dispute_id FROM
-        `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
-        WHERE RESOLUTION_DATE > '{date_val}') disputes
-        on orders.ACCOUNT_NO_ANON = disputes.dispute_id"""
-
-        return sql, ''
+        join_type = 'JOIN '
+        return join_type + sql, ''
     elif dispute_val[0] == 'No':
-        sql = f"""LEFT JOIN
-        (SELECT DISTINCT ACCOUNT_NO_ANON dispute_id FROM
-        `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
-        WHERE RESOLUTION_DATE > '{date_val}') disputes
-        on orders.ACCOUNT_NO_ANON = disputes.dispute_id"""
+        join_type = 'LEFT JOIN '
 
-        return sql, "AND dispute_id is Null"
+        return join_type + sql, "AND dispute_id is Null"
+    else:
+        return '', ''
+
+
+def fault_query(fault_val, date_val):
+    sql = f"""
+        (SELECT DISTINCT SERVICE_KEY_ANON fault_id FROM
+        `bcx-insights.telkom_customerexperience.faults_20190903_00_anon`
+        WHERE DATDRGT > '{date_val}') faults
+        on orders.ACCOUNT_NO_ANON = faults.fault_id"""
+
+    if fault_val[0] == 'Yes':
+        join_type = 'JOIN '
+        return join_type + sql, ''
+    elif fault_val[0] == 'No':
+        join_type = 'LEFT JOIN '
+
+        return join_type + sql, "AND fault_id is Null"
     else:
         return '', ''
 
@@ -86,12 +101,13 @@ def last_status_or_action_query(statuses, actions):
 
 
 def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
-                    date_val, dispute_val, action_filter):
+                    date_val, dispute_val, action_filter, fault_val):
 
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
     dispute_join, dispute_where = dispute_query(dispute_val, date_val)
+    fault_join, fault_where = fault_query(fault_val, date_val)
 
     action_status_subquery, action_status_where = last_status_or_action_query(action_status, action_filter)
 
@@ -115,7 +131,8 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            ON custs.CUSTOMER_NO_ANON = orders.ACCOUNT_NO_ANON
 
            {dispute_join}
-
+           {fault_join}
+           
            {action_status_subquery}
 
            WHERE 1 = 1
@@ -124,6 +141,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            {deal_desc}
            {action_status_where}
            {dispute_where}
+           {fault_where}
 
            {min_date_criteria}
           )

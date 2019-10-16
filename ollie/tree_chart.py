@@ -18,20 +18,19 @@ chart_height = 600
 
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, date_val=None,
-                dispute_val=None, action_filter=None):
+                dispute_val=None, action_filter=None, fault_filter=None):
 
     num_nodes = 0
     hover_item_limit = 5
     all_nodes = {}
     links = {}
     coords = []
-    counts = {}
-    coords_map = {}
 
     if df is None:
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
                                             deals, action_status, date_val,
-                                            dispute_val, action_filter),
+                                            dispute_val, action_filter,
+                                            fault_filter),
                                             project_id='bcx-insights',
                                             dialect='standard')
 

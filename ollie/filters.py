@@ -49,6 +49,12 @@ def has_dispute():
             {'label': 'No', 'value': 'No'}]
 
 
+def has_fault():
+    return [{'label': 'Either', 'value': 'Either'},
+            {'label': 'Yes', 'value': 'Yes'},
+            {'label': 'No', 'value': 'No'}]
+
+
 def deal_desc():
     type_sql = r"""SELECT distinct DEAL_DESC,
     TRIM(REGEXP_REPLACE(DEAL_DESC, '(\\(|\\)|\\bR\\d*|\\d*(GB|MB|@|Mbps)|\\s\\d|\\+|\\b\\d\\b)', '')) DEAL
