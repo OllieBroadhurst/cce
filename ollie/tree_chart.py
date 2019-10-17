@@ -20,7 +20,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, date_val=None,
                 dispute_val=None, action_filter=None, fault_filter=None):
     """
-    df: provide a custom data frame for the function to work with. Not used really
+    df:             provide a custom data frame for the function to work with.
+                    Not used really
     service_types:  the type of service used for filtering. A tickbox with two
                     options for now but more may be needed
     customer_types: taken from the customers table, not all types seem to appear
@@ -47,6 +48,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                                             project_id='bcx-insights',
                                             dialect='standard')
 
+    # If the query returns no results then display an empty chart
     if len(df) == 0:
         return go.FigureWidget({'data':
                     {
