@@ -148,7 +148,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
 
           SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE, ACTION_TYPE_DESC) Stage
           FROM CTE
-          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC, ACTION_TYPE_DESC"""
+          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
     return query
 

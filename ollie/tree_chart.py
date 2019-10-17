@@ -19,12 +19,25 @@ chart_height = 600
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, date_val=None,
                 dispute_val=None, action_filter=None, fault_filter=None):
+    """
+    df: provide a custom data frame for the function to work with. Not used really
+    service_types:  the type of service used for filtering. A tickbox with two
+                    options for now but more may be needed
+    customer_types: taken from the customers table, not all types seem to appear
+                    in the orders table so be careful
+    deals:          the deals of each order. These are actually grouped and each
+                    value corresponds to multiple sub-deals usually meaning
+                    different terms and pricing
+    action_status:  action status represents the final status of the order
+    date_val:       the value of the date picker
+    dispute_val:    whether or not the customer had a dispute
+    action_filter:  the final action of that order
+    fault_filter:   whether or not the customer lodged a fault
+    """
 
-    num_nodes = 0
     hover_item_limit = 5
     all_nodes = {}
     links = {}
-    coords = []
 
     if df is None:
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
@@ -102,21 +115,16 @@ def get_figure(df=None, service_types=None, customer_types=None,
     times = None
     route_count = None
 
-    max_stage_count = []
-
     for ix, l in df.iterrows():
         if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
             if l['Position'] not in links.keys():
                 links[l['Position']] = {'joins':[], 'stage': ix[3]}
 
-            max_stage_count.append(ix[3])
-
             if l['Link'] not in links[l['Position']]['joins']:
                 links[l['Position']]['joins'].append(l['Link'])
 
-    max_stage_count = len([s for s in max_stage_count if s == max(max_stage_count)])
 
-    colours = ['green'] * len(all_labels)
+    colours = ['green'] * len(all_nodes)
 
     node_x = [x[0] for x in all_nodes.keys()]
     node_y = [y[1] for y in all_nodes.keys()]
@@ -150,7 +158,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     standoff = 15))
 
 
-    newline_labels = [v.replace(' ', '<br>') for v in all_labels]
+
+    newline_labels = [v['label'].replace(' ', '<br>') for v in all_nodes.values()]
     hover_labels = []
 
     for node, v in all_nodes.items():
@@ -163,14 +172,16 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
             all_nodes[node]['accounts'] = accs
 
-            hover_labels.append(f'{lab}<br>Account - ID - Device<br>' + '<br>'.join([f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
+            hover_labels.append(f'{lab}<br>Account - Order ID - Device<br>' + '<br>'.join([f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
         else:
             hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
+
+    top_stage_count = len([v['stage'] for v in all_nodes.values() if v['stage'] == 1])
 
     traces = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
-        textposition=['bottom center'] * (len(all_labels) - max_stage_count) + ['top center'] * max_stage_count,
+        textposition=['bottom center'] * top_stage_count + ['top center'] * (len(all_nodes) - top_stage_count),
         text = newline_labels,
         hoverinfo='text',
         hovertext=hover_labels,
