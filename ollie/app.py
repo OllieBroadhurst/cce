@@ -26,7 +26,7 @@ filter_font_size = '12px'
 
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart(), style={'overflow-y': 'hidden'}),
-                    style={'padding-top': '1%', 'padding-right': '2%',
+                    style={'padding-top': '5px', 'padding-right': '5px',
                         'float': 'right', 'width': '100%', 'height': '90%'}
                     )
 
@@ -150,7 +150,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESO
 
 
 app.layout = html.Div([
-            html.Div([collapse_button, filter_panel], style={'width': '90%', 'padding-top': '2%', 'float': 'right'}),
+            html.Div([collapse_button, filter_panel], style={'width': '90%', 'padding-top': '5px', 'float': 'right'}),
             graph,
             html.Div(children='{}', id='history', style={'display': 'none'}),
             html.Div(children='{}', id='links', style={'display': 'none'}),
