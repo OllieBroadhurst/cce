@@ -72,7 +72,7 @@ top_filters = html.Div([
                         children='Final Action Status',
                         multi=True,
                         options=action_status(),
-                        style={'height': filter_height, 'width': '150px'})],
+                        style={'height': filter_height, 'width': '170px'})],
                         style={'padding-top': filter_padding_top,
                                 'float': filter_float,
                                 'padding-right': filter_padding_right})])
