@@ -14,7 +14,7 @@ default_axis_params = dict(showgrid=False,
                         showline=False)
 
 chart_margin = dict(b=0,l=5,r=5,t=0)
-chart_height = 600
+chart_height = 650
 
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, start_date_val=None, end_date_val=None,
@@ -321,7 +321,7 @@ def default_chart():
                 'marker': {'size': 1}
                 },
                 'layout':go.Layout(
-                height=1000,
+                height=chart_height,
                 xaxis=default_axis_params,
                 yaxis=default_axis_params
                 )}

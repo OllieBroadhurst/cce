@@ -78,7 +78,7 @@ top_filters = html.Div([
                                 'padding-right': filter_padding_right})])
 
 bottom_filters = html.Div([
-                    html.Div([html.H5(children='Actions Since', style=header_style),
+                    html.Div([html.H5(children='Date Range', style=header_style),
                     dcc.DatePickerRange(
                         id='date_filter',
                         display_format='YYYY-MM-DD',
