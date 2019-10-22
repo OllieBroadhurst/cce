@@ -4,6 +4,7 @@ from datetime import datetime as dt, timedelta
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
@@ -16,63 +17,92 @@ import json
 from ast import literal_eval
 
 
-
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-header_style = {'font-size': 12}
-filter_style = {'padding-bottom': '10px', 'font-size': 12}
+header_style = {'font-size': '16px'}
+filter_padding_top = '20px'
+filter_float = 'right'
+filter_height = '48px'
+filter_padding_right = '30px'
+filter_font_size = '12px'
 
 graph = html.Div(dcc.Graph(id='tree_chart',
-                    figure=default_chart()),
-                    style={'float': 'left', 'width': '82%', 'height': '600px'}#,
+                    figure=default_chart(), style={'overflow-y': 'hidden'}),
+                    style={'padding-top': '1%', 'padding-right': '2%',
+                        'float': 'right', 'width': '100%', 'height': '90%'}
                     )
 
-filters = html.Div([
+
+top_filters = html.Div([
                     html.Div([html.H5(children='Service', style=header_style),
                     dcc.Checklist(
                         id='service_filter',
                         children='Service Type',
-                        options=service_options())],
-                        style=filter_style),
-
-                    html.Div([html.H5(children='Actions Since', style=header_style),
-                    dcc.DatePickerSingle(
-                        id='date_filter',
-                        display_format='YYYY-MM-DD',
-                        placeholder='YYYY-MMM-DD',
-                        date=(dt.today() - timedelta(days=60)).date())],
-                        style=filter_style),
-
-                    html.Div([html.H5(children='Customer Type', style=header_style),
-                    dcc.Dropdown(
-                        id='customer_type_filter',
-                        children='Customer Type',
-                        multi=True,
-                        options=customer_type())],
-                        style=filter_style),
-
-                    html.Div([html.H5(children='Deal Description', style=header_style),
-                    dcc.Dropdown(
-                        id='deal_desc_filter',
-                        children='Deal Description',
-                        multi=True,
-                        options=deal_desc())],
-                        style=filter_style),
-
-                    html.Div([html.H5(children='Final Action Status', style=header_style),
-                    dcc.Dropdown(
-                        id='action_status_filter',
-                        children='Final Action Status',
-                        multi=True,
-                        options=action_status())],
-                        style=filter_style),
+                        options=service_options(),
+                        inputStyle={'margin-left': '10px'},
+                        style={'height': filter_height})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
 
                     html.Div([html.H5(children='Final Action', style=header_style),
                     dcc.Dropdown(
                         id='final_action_filter',
                         children='Final Action Type',
                         multi=True,
-                        options=action_type())],
-                        style=filter_style),
+                        options=action_type(),
+                        style={'height': filter_height, 'width': '200px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
+
+
+                    html.Div([html.H5(children='Customer Type', style=header_style),
+                    dcc.Dropdown(
+                        id='customer_type_filter',
+                        children='Customer Type',
+                        multi=True,
+                        options=customer_type(),
+                        style={'width': '200px', 'height': filter_height})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
+
+                    html.Div([html.H5(children='Final Action Status', style=header_style),
+                    dcc.Dropdown(
+                        id='action_status_filter',
+                        children='Final Action Status',
+                        multi=True,
+                        options=action_status(),
+                        style={'height': filter_height, 'width': '150px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right})])
+
+bottom_filters = html.Div([
+                    html.Div([html.H5(children='Actions Since', style=header_style),
+                    dcc.DatePickerRange(
+                        id='date_filter',
+                        display_format='YYYY-MM-DD',
+                        start_date_placeholder_text='YYYY-MMM-DD',
+                        end_date_placeholder_text='YYYY-MMM-DD',
+                        max_date_allowed=dt.today().date(),
+                        end_date=dt.today().date(),
+                        start_date=(dt.today() - timedelta(days=60)).date(),
+                        style={'height': filter_height}
+                        )],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
+
+                    html.Div([html.H5(children='Deal Description', style=header_style),
+                    dcc.Dropdown(
+                        id='deal_desc_filter',
+                        children='Deal Description',
+                        multi=True,
+                        options=deal_desc(),
+                        style={'height': filter_height, 'width': '250px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
 
                     html.Div([html.H5(children='Has Dispute', style=header_style),
                     dcc.Dropdown(
@@ -80,8 +110,11 @@ filters = html.Div([
                         children='Has Dispute',
                         multi=False,
                         value='Either',
-                        options=has_dispute())],
-                        style=filter_style),
+                        options=has_dispute(),
+                        style={'height': filter_height, 'width': '100px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
 
                     html.Div([html.H5(children='Has Fault', style=header_style),
                     dcc.Dropdown(
@@ -89,28 +122,42 @@ filters = html.Div([
                         children='Has Fault',
                         multi=False,
                         value='Either',
-                        options=has_fault())],
-                        style=filter_style)
-                        ], style={'overflow-y':'scroll', 'height':'620px'})
+                        options=has_fault(),
+                        style={'height': filter_height, 'width': '100px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right})], style={'padding-top': '2px'})
 
-button = html.Div(html.Button('Show', id='run_button',
-            style={'padding-bottom': '20px'}))
+button = html.Button('Run', id='run_button', style={'float': 'right'})
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+collapse_button = html.Div(html.Button(className='mr-1',
+                    children=html.Span(
+                                html.I(className='fas fa-angle-up',
+                                        id='button-icon',
+                                        style={'aria-hidden': 'true'})),
+                    id='collapse-button'),
+                style={'padding-left': '50px', 'padding-right': '50px', 'float': 'right'})
+
+
+filter_panel_style = {'float': 'right', 'width': '910px', 'height': '250px'}
+filter_panel =  dbc.Collapse(children=dbc.Card([button, top_filters, bottom_filters], style=filter_panel_style),
+                                    id='collapse',
+                                    is_open=True)
+
+FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESOME])
 
 
 app.layout = html.Div([
-    html.H1(children='BCX Insights'),
-
-            html.Div([
-                html.Div([button, filters], style={'width': '17%', 'float': 'left'}),
-                graph]),
+            html.Div([collapse_button, filter_panel], style={'width': '90%', 'padding-top': '2%', 'float': 'right'}),
+            graph,
             html.Div(children='{}', id='history', style={'display': 'none'}),
             html.Div(children='{}', id='links', style={'display': 'none'}),
             html.Div(children='{}', id='routes', style={'display': 'none'}),
             html.Div(children='{}', id='desc_map', style={'display': 'none'})
-            ]
-    )
+            ],
+            style={'overflow-y': 'hidden'})
 
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
             Output('links', 'children'), Output('routes', 'children')]
@@ -121,14 +168,15 @@ states = [State('service_filter', 'value'), State('customer_type_filter', 'value
         State('history', 'children'), State('tree_chart', 'figure'),
         State('links', 'children'), State('routes', 'children'),
         State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
-        State('date_filter', 'date'), State('dispute_filter', 'value'),
-        State('final_action_filter', 'value'), State('fault_filter', 'value')]
+        State('date_filter', 'start_date'), State('date_filter', 'end_date'),
+        State('dispute_filter', 'value'), State('final_action_filter', 'value'),
+        State('fault_filter', 'value')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, links, routes,
-                deals, status, date_val, dispute_val,
+                deals, status, start_date_val, end_date_val, dispute_val,
                 action_filter, fault_filter):
     history = json.loads(btn_history)
     links = json.loads(links)
@@ -142,8 +190,8 @@ def generate_tree(click_btn, node_click, services, types,
 
     if str(click_btn) not in history.keys() and click_btn is not None:
         fig, links, routes = get_figure(None, services, types, deals, status,
-                                        date_val, dispute_val, action_filter,
-                                        fault_filter)
+                                        start_date_val, end_date_val, dispute_val,
+                                        action_filter, fault_filter)
 
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}
@@ -168,6 +216,19 @@ def generate_tree(click_btn, node_click, services, types,
     else:
         raise PreventUpdate
 
+
+@app.callback(
+    [Output("collapse", "is_open"),
+    Output("button-icon", "className")],
+    [Input("collapse-button", "n_clicks")],
+    [State("collapse", "is_open")],)
+def toggle_collapse(n, is_open):
+    if n is not None:
+        if is_open:
+            return not is_open, 'fas fa-angle-down'
+        else:
+            return not is_open, 'fas fa-angle-up'
+    raise PreventUpdate
 
 if __name__ == '__main__':
     app.run_server(debug=True)

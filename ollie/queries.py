@@ -15,11 +15,11 @@ def build_query(iterable, field_name):
         return ''
 
 
-def dispute_query(dispute_val, date_val):
+def dispute_query(dispute_val, start_date_val, end_date_val):
     sql = f"""
         (SELECT DISTINCT ACCOUNT_NO_ANON dispute_id FROM
         `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
-        WHERE RESOLUTION_DATE > '{date_val}') disputes
+        WHERE RESOLUTION_DATE BETWEEN '{start_date_val}' AND '{end_date_val}') disputes
         on orders.ACCOUNT_NO_ANON = disputes.dispute_id"""
 
     if dispute_val == 'Yes':
@@ -33,11 +33,11 @@ def dispute_query(dispute_val, date_val):
         return '', ''
 
 
-def fault_query(fault_val, date_val):
+def fault_query(fault_val, start_date_val, end_date_val):
     sql = f"""
         (SELECT DISTINCT SERVICE_KEY_ANON fault_id FROM
         `bcx-insights.telkom_customerexperience.faults_20190903_00_anon`
-        WHERE DATDRGT > '{date_val}') faults
+        WHERE DATDRGT BETWEEN '{start_date_val}' AND '{end_date_val}') faults
         on orders.ACCOUNT_NO_ANON = faults.fault_id"""
 
     if fault_val == 'Yes':
@@ -51,12 +51,12 @@ def fault_query(fault_val, date_val):
         return '', ''
 
 
-def date_query(date_val):
+def date_query(start_date_val, end_date_val):
     min_date_field = "MIN(orders.ORDER_CREATION_DATE)"
     min_date_criteria = f"""GROUP BY orders.ORDER_CREATION_DATE,
                         orders.ORDER_ID_ANON, orders.MSISDN_ANON,
                         orders.ACTION_TYPE_DESC, ACCOUNT_NO_ANON
-                        HAVING {min_date_field} >= '{date_val}'"""
+                        HAVING {min_date_field} BETWEEN '{start_date_val}' AND '{end_date_val}'"""
 
     return f"{min_date_field},", min_date_criteria
 
@@ -101,18 +101,18 @@ def last_status_or_action_query(statuses, actions):
 
 
 def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
-                    date_val, dispute_val, action_filter, fault_val):
+                    start_date_val, end_date_val, dispute_val, action_filter, fault_val):
 
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
-    dispute_join, dispute_where = dispute_query(dispute_val, date_val)
-    fault_join, fault_where = fault_query(fault_val, date_val)
+    dispute_join, dispute_where = dispute_query(dispute_val, start_date_val, end_date_val)
+    fault_join, fault_where = fault_query(fault_val, start_date_val, end_date_val)
 
     action_status_subquery, action_status_where = last_status_or_action_query(action_status, action_filter)
 
-    if date_val is not None:
-        min_date_field, min_date_criteria = date_query(date_val)
+    if start_date_val is not None and end_date_val is not None:
+        min_date_field, min_date_criteria = date_query(start_date_val, end_date_val)
 
     query = f"""WITH CTE as (
           SELECT DISTINCT

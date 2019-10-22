@@ -17,7 +17,7 @@ chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 600
 
 def get_figure(df=None, service_types=None, customer_types=None,
-                deals=None, action_status=None, date_val=None,
+                deals=None, action_status=None, start_date_val=None, end_date_val=None,
                 dispute_val=None, action_filter=None, fault_filter=None):
     """
     df:             provide a custom data frame for the function to work with.
@@ -30,7 +30,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     value corresponds to multiple sub-deals usually meaning
                     different terms and pricing
     action_status:  action status represents the final status of the order
-    date_val:       the value of the date picker
+    start_date_val: the start value of the date picker
+    end_date_val:   the end value of the date picker
     dispute_val:    whether or not the customer had a dispute
     action_filter:  the final action of that order
     fault_filter:   whether or not the customer lodged a fault
@@ -42,8 +43,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     if df is None:
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
-                                            deals, action_status, date_val,
-                                            dispute_val, action_filter,
+                                            deals, action_status, start_date_val,
+                                            end_date_val, dispute_val, action_filter,
                                             fault_filter),
                                             project_id='bcx-insights',
                                             dialect='standard')
@@ -312,7 +313,6 @@ def find_journey(figure, paths, routes, x, y):
 
 
 def default_chart():
-
     empty_scatter = {'data':
                 {
                 'x': [[]],
@@ -321,7 +321,7 @@ def default_chart():
                 'marker': {'size': 1}
                 },
                 'layout':go.Layout(
-                height=chart_height,
+                height=1000,
                 xaxis=default_axis_params,
                 yaxis=default_axis_params
                 )}
@@ -331,7 +331,6 @@ def default_chart():
                     titlefont_size=16,
                     showlegend=False,
                     height=chart_height,
-                    margin=chart_margin,
                     xaxis=default_axis_params,
                     yaxis=default_axis_params)
                     )
