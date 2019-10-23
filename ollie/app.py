@@ -141,7 +141,7 @@ collapse_button = html.Div(html.Button(className='mr-1',
 
 filter_panel_style = {'float': 'right', 'width': '910px', 'height': '250px'}
 filter_panel =  dbc.Collapse(children=dbc.Card([button, top_filters, bottom_filters], style=filter_panel_style),
-                                    id='collapse',
+                                    id='collapse2',
                                     is_open=True)
 
 FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
@@ -218,10 +218,10 @@ def generate_tree(click_btn, node_click, services, types,
 
 
 @app.callback(
-    [Output("collapse", "is_open"),
+    [Output("collapse2", "is_open"),
     Output("button-icon", "className")],
     [Input("collapse-button", "n_clicks")],
-    [State("collapse", "is_open")],)
+    [State("collapse2", "is_open")],)
 def toggle_collapse(n, is_open):
     if n is not None:
         if is_open:
