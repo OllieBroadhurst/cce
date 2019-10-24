@@ -1,4 +1,4 @@
-
+import math
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
@@ -137,13 +137,19 @@ def get_figure(df=None, service_types=None, customer_types=None,
     arrows = []
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
+    mean_duration = np.mean([v['Duration'] for v in routes.values()])
 
     for k, v in routes.items():
         route_relative_count = v['Count']/mean_count
+        route_relative_duration = v['Duration']/mean_duration if mean_duration > 0 else 0
 
-        r = int(255 * route_relative_count)
-        g = int(255 * max(1 - route_relative_count, 0))
-        b = int(255 * max(1 - route_relative_count, 0) * 0.5)
+        print(math.tanh(route_relative_duration/2))
+
+        r = int(240 * np.clip(math.tanh(route_relative_duration/2), 0, 1))
+        g = int(100 * (1 - np.clip(math.tanh(route_relative_duration/2), 0, 1)))
+        b = int(100 * (1 - np.clip(math.tanh(route_relative_duration/2), 0, 1)) * 0.4)
+
+        print(f'rgba({r}, {g}, {b}, {line_alpha})')
 
         width = min((1.2 + route_relative_count)**3, 8)
 
