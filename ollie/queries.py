@@ -61,6 +61,15 @@ def date_query(start_date_val, end_date_val):
     return f"{min_date_field},", min_date_criteria
 
 
+def has_action(action_list):
+    if actions is not None:
+        if len(actions) > 0:
+            sql = f""" JOIN (SELECT DISTINCT ORDER_ID_ANON FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+            WHERE ACTION_TYPE_DESC IN ({actions})) has_actions
+            on orders.ORDER_ID_ANON = has_actions.ORDER_ID_ANON"""
+        return sql
+    return ''
+
 def last_status_or_action_query(statuses, actions):
 
     status_field, status_where, status_group = '', '', ''

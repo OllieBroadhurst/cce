@@ -241,11 +241,12 @@ def find_journey(figure, paths, routes, x, y):
         figure['data'] = figure['data'][:-1]
 
     arrow_annotations = [a for a in figure['layout']['annotations'] if 'bordercolor' not in a.keys()]
+    marker_colours = figure['data'][0]['marker']['color']
 
     coords = list(zip(figure['data'][0]['x'], figure['data'][0]['y']))
     selection_index = coords.index((x, y))
 
-    if figure['data'][0]['marker']['color'][selection_index] != 'blue':
+    if 'blue' not in marker_colours or ('blue' in marker_colours and figure['data'][0]['marker']['color'][selection_index] != 'blue'):
         colours = ['green'] * len(figure['data'][0]['marker']['color'])
         alphas = [0.1] * len(figure['data'][0]['x'])
 
@@ -261,6 +262,7 @@ def find_journey(figure, paths, routes, x, y):
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
 
+        figure['layout']['annotations'] = arrow_annotations
         for i, line in enumerate(figure['layout']['annotations']):
             c = line['arrowcolor']
             figure['layout']['annotations'][i]['arrowcolor'] = c.replace(f'{line_alpha}', '0.1')
