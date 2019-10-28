@@ -75,7 +75,20 @@ top_filters = html.Div([
                         style={'height': filter_height, 'width': '170px'})],
                         style={'padding-top': filter_padding_top,
                                 'float': filter_float,
-                                'padding-right': filter_padding_right})])
+                                'padding-right': filter_padding_right}),
+
+                    html.Div([html.H5(children='Minimum hours: 0', style=header_style, id='hours_header'),
+                    dcc.Slider(
+                            id='hours_slider',
+                            min=0,
+                            max=2000,
+                            step=1,
+                            value=0
+                        )],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right,
+                                'width': '250px'})])
 
 bottom_filters = html.Div([
                     html.Div([html.H5(children='Date Range', style=header_style),
@@ -139,7 +152,7 @@ collapse_button = html.Div(html.Button(className='mr-1',
                 style={'padding-left': '50px', 'padding-right': '50px', 'float': 'right'})
 
 
-filter_panel_style = {'float': 'right', 'width': '910px', 'height': '250px'}
+filter_panel_style = {'float': 'right', 'width': '1300px', 'height': '250px'}
 filter_panel =  dbc.Collapse(children=dbc.Card([button, top_filters, bottom_filters], style=filter_panel_style),
                                     id='collapse2',
                                     is_open=True)
@@ -170,14 +183,14 @@ states = [State('service_filter', 'value'), State('customer_type_filter', 'value
         State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
         State('date_filter', 'start_date'), State('date_filter', 'end_date'),
         State('dispute_filter', 'value'), State('final_action_filter', 'value'),
-        State('fault_filter', 'value')]
+        State('fault_filter', 'value'), State('hours_slider', 'value')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, links, routes,
                 deals, status, start_date_val, end_date_val, dispute_val,
-                action_filter, fault_filter):
+                action_filter, fault_filter, min_hours):
     history = json.loads(btn_history)
     links = json.loads(links)
     routes = json.loads(routes)
@@ -191,7 +204,7 @@ def generate_tree(click_btn, node_click, services, types,
     if str(click_btn) not in history.keys() and click_btn is not None:
         fig, links, routes = get_figure(None, services, types, deals, status,
                                         start_date_val, end_date_val, dispute_val,
-                                        action_filter, fault_filter)
+                                        action_filter, fault_filter, min_hours)
 
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}
@@ -229,6 +242,14 @@ def toggle_collapse(n, is_open):
         else:
             return not is_open, 'fas fa-angle-up'
     raise PreventUpdate
+
+
+@app.callback(
+    Output('hours_header', 'children'),
+    [Input('hours_slider', 'value')])
+def update_output(value):
+    return f'Minimum hours: {value}'
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -61,6 +61,15 @@ def date_query(start_date_val, end_date_val):
     return f"{min_date_field},", min_date_criteria
 
 
+def has_action(action_list):
+    if actions is not None:
+        if len(actions) > 0:
+            sql = f""" JOIN (SELECT DISTINCT ORDER_ID_ANON FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+            WHERE ACTION_TYPE_DESC IN ({actions})) has_actions
+            on orders.ORDER_ID_ANON = has_actions.ORDER_ID_ANON"""
+        return sql
+    return ''
+
 def last_status_or_action_query(statuses, actions):
 
     status_field, status_where, status_group = '', '', ''
@@ -99,15 +108,27 @@ def last_status_or_action_query(statuses, actions):
     return sql, status_where + ' ' + action_where
 
 
+def build_min_hours(min_hours):
+    if min_hours > 0:
+        sql = """TIMESTAMP_DIFF(MAX(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON),
+                MIN(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON), HOUR) j_duration,"""
+
+        min_hours_where = f'AND j_duration >= {min_hours}'
+
+        return sql, min_hours_where
+    return '', ''
 
 def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
-                    start_date_val, end_date_val, dispute_val, action_filter, fault_val):
+                    start_date_val, end_date_val, dispute_val, action_filter,
+                    fault_val, min_hours):
 
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
     dispute_join, dispute_where = dispute_query(dispute_val, start_date_val, end_date_val)
     fault_join, fault_where = fault_query(fault_val, start_date_val, end_date_val)
+    hours_sql_field, hours_where = build_min_hours(min_hours)
+
 
     action_status_subquery, action_status_where = last_status_or_action_query(action_status, action_filter)
 
@@ -119,9 +140,11 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           orders.ACCOUNT_NO_ANON,
           orders.ORDER_CREATION_DATE,
           {min_date_field}
+          {hours_sql_field}
           orders.ORDER_ID_ANON,
           orders.MSISDN_ANON,
-          ACTION_TYPE_DESC
+          ACTION_TYPE_DESC,
+          IFNULL(timestamp_diff(LAG(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON order by ORDER_CREATION_DATE DESC), ORDER_CREATION_DATE, HOUR), 0) Duration
            FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon` orders
 
            LEFT JOIN
@@ -146,8 +169,10 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            {min_date_criteria}
           )
 
-          SELECT *, ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE, ACTION_TYPE_DESC) Stage
-          FROM CTE
+          SELECT ACCOUNT_NO_ANON, ORDER_CREATION_DATE, ORDER_ID_ANON,
+          MSISDN_ANON, ACTION_TYPE_DESC, Duration,
+          ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE, ACTION_TYPE_DESC) Stage
+          FROM CTE WHERE 1 = 1 {hours_where}
           order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
     return query

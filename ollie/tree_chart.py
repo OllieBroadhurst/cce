@@ -6,6 +6,8 @@ import pandas as pd
 
 from queries import criteria_tree_sql
 
+pd.set_option('display.max_columns', None)
+
 line_alpha = 0.5
 
 default_axis_params = dict(showgrid=False,
@@ -18,7 +20,8 @@ chart_height = 650
 
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, start_date_val=None, end_date_val=None,
-                dispute_val=None, action_filter=None, fault_filter=None):
+                dispute_val=None, action_filter=None, fault_filter=None,
+                min_hours=None):
     """
     df:             provide a custom data frame for the function to work with.
                     Not used really
@@ -35,6 +38,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
     dispute_val:    whether or not the customer had a dispute
     action_filter:  the final action of that order
     fault_filter:   whether or not the customer lodged a fault
+    min_hours:      the minimum nuber of journey hours
     """
 
     hover_item_limit = 5
@@ -45,7 +49,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
                                             deals, action_status, start_date_val,
                                             end_date_val, dispute_val, action_filter,
-                                            fault_filter),
+                                            fault_filter, min_hours),
                                             project_id='bcx-insights',
                                             dialect='standard')
 
@@ -65,8 +69,6 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     )}), links, {}
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
-
-    df['Duration'] = (df['ORDER_CREATION_DATE'].diff().dt.days > 0) * df['ORDER_CREATION_DATE'].diff().dt.seconds/60
 
     WIDTH = df['Stage'].value_counts().max() * 0.75
     HEIGHT = 10
@@ -102,20 +104,13 @@ def get_figure(df=None, service_types=None, customer_types=None,
         all_nodes[k]['count'] = v
     counts = None
 
-    route_count = df[['Position', 'Link']]
-    route_count['Count'] = 1
-    route_count = route_count.groupby(['Position', 'Link']).sum().to_dict()['Count']
+    routes = df.loc[:, ['Position', 'Link', 'Duration']]
+    routes['Count'] = 1
+    routes = routes.groupby(['Position', 'Link']).agg({'Count': 'sum', 'Duration': 'max'})
 
-    times = df.groupby(['Position', 'Link']).mean().dropna()
-    times = times.round(0).astype(int).to_dict()['Duration']
+    routes = routes.T.to_dict()
 
-    route_count = {k: v for k, v in route_count.items() if k[0][1] > k[1][1]}
-    times = {k: v for k, v in times.items() if k[0][1] > k[1][1]}
-
-    routes = {k: {'Duration':times[k], 'Count':route_count[k]} for k in times.keys()}
-
-    times = None
-    route_count = None
+    routes = {k: v for k, v in routes.items() if k[0][1] > k[1][1]}
 
     for ix, l in df.iterrows():
         if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
@@ -143,13 +138,9 @@ def get_figure(df=None, service_types=None, customer_types=None,
         route_relative_count = v['Count']/mean_count
         route_relative_duration = v['Duration']/mean_duration if mean_duration > 0 else 0
 
-        print(math.tanh(route_relative_duration/2))
-
         r = int(240 * np.clip(math.tanh(route_relative_duration/2), 0, 1))
-        g = int(100 * (1 - np.clip(math.tanh(route_relative_duration/2), 0, 1)))
+        g = int(240 * (1 - np.clip(math.tanh(route_relative_duration/2), 0, 1)))
         b = int(100 * (1 - np.clip(math.tanh(route_relative_duration/2), 0, 1)) * 0.4)
-
-        print(f'rgba({r}, {g}, {b}, {line_alpha})')
 
         width = min((1.2 + route_relative_count)**3, 8)
 
@@ -250,11 +241,12 @@ def find_journey(figure, paths, routes, x, y):
         figure['data'] = figure['data'][:-1]
 
     arrow_annotations = [a for a in figure['layout']['annotations'] if 'bordercolor' not in a.keys()]
+    marker_colours = figure['data'][0]['marker']['color']
 
     coords = list(zip(figure['data'][0]['x'], figure['data'][0]['y']))
     selection_index = coords.index((x, y))
 
-    if figure['data'][0]['marker']['color'][selection_index] != 'blue':
+    if 'blue' not in marker_colours or ('blue' in marker_colours and figure['data'][0]['marker']['color'][selection_index] != 'blue'):
         colours = ['green'] * len(figure['data'][0]['marker']['color'])
         alphas = [0.1] * len(figure['data'][0]['x'])
 
@@ -270,6 +262,7 @@ def find_journey(figure, paths, routes, x, y):
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
 
+        figure['layout']['annotations'] = arrow_annotations
         for i, line in enumerate(figure['layout']['annotations']):
             c = line['arrowcolor']
             figure['layout']['annotations'][i]['arrowcolor'] = c.replace(f'{line_alpha}', '0.1')
