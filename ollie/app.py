@@ -54,7 +54,6 @@ top_filters = html.Div([
                                 'float': filter_float,
                                 'padding-right': filter_padding_right}),
 
-
                     html.Div([html.H5(children='Customer Type', style=header_style),
                     dcc.Dropdown(
                         id='customer_type_filter',
@@ -77,7 +76,7 @@ top_filters = html.Div([
                                 'float': filter_float,
                                 'padding-right': filter_padding_right}),
 
-                    html.Div([html.H5(children='Minimum hours: 0', style=header_style, id='hours_header'),
+                    html.Div([html.H5(children='Minimum journey hours: 0', style=header_style, id='hours_header'),
                     dcc.Slider(
                             id='hours_slider',
                             min=0,
@@ -143,14 +142,12 @@ bottom_filters = html.Div([
 
 button = html.Button('Run', id='run_button', style={'float': 'right'})
 
-collapse_button = html.Div(html.Button(className='mr-1',
+collapse_button = html.Button(className='mr-1',
                     children=html.Span(
                                 html.I(className='fas fa-angle-up',
                                         id='button-icon',
                                         style={'aria-hidden': 'true'})),
-                    id='collapse-button'),
-                style={'padding-left': '50px', 'padding-right': '50px', 'float': 'right'})
-
+                    id='collapse-button', style={'float': 'right'})
 
 filter_panel_style = {'float': 'right', 'width': '1300px', 'height': '250px'}
 filter_panel =  dbc.Collapse(children=dbc.Card([button, top_filters, bottom_filters], style=filter_panel_style),
@@ -163,7 +160,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESO
 
 
 app.layout = html.Div([
-            html.Div([collapse_button, filter_panel], style={'width': '90%', 'padding-top': '5px', 'float': 'right'}),
+            html.Div([collapse_button, filter_panel], style={'padding-top': '5px'}),
             graph,
             html.Div(children='{}', id='history', style={'display': 'none'}),
             html.Div(children='{}', id='links', style={'display': 'none'}),
@@ -248,7 +245,7 @@ def toggle_collapse(n, is_open):
     Output('hours_header', 'children'),
     [Input('hours_slider', 'value')])
 def update_output(value):
-    return f'Minimum hours: {value}'
+    return f'Minimum journey hours: {value}'
 
 
 if __name__ == '__main__':
