@@ -27,7 +27,7 @@ filter_font_size = '12px'
 graph = html.Div(dcc.Graph(id='tree_chart',
                     figure=default_chart(), style={'overflow-y': 'hidden'}),
                     style={'padding-top': '5px', 'padding-right': '5px',
-                        'float': 'right', 'width': '100%', 'height': '90%'}
+                        'float': 'right', 'width': '100%'}
                     )
 
 

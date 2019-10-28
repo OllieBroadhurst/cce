@@ -16,7 +16,7 @@ default_axis_params = dict(showgrid=False,
                         showline=False)
 
 chart_margin = dict(b=0,l=5,r=5,t=0)
-chart_height = 650
+chart_height = 700
 
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, start_date_val=None, end_date_val=None,
