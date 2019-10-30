@@ -70,7 +70,7 @@ def includes_action(action_list, start_date_val, end_date_val):
             `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
             WHERE ACTION_TYPE_DESC IN ({action_list})
             AND ORDER_CREATION_DATE BETWEEN '{start_date_val}' AND '{end_date_val}')"""
-        return sql
+            return sql
     return ''
 
 
@@ -184,7 +184,6 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           FROM CTE WHERE 1 = 1 {hours_where}
           order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
-    print(query)
     return query
 
 
