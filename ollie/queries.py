@@ -61,14 +61,18 @@ def date_query(start_date_val, end_date_val):
     return f"{min_date_field},", min_date_criteria
 
 
-def includes_action(action_list):
-    if actions is not None:
-        if len(actions) > 0:
-            sql = f""" AND orders.ACTION_TYPE_DESC in (SELECT DISTINCT ORDER_ID_ANON FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
-            WHERE ACTION_TYPE_DESC IN ({actions}))"""
+def includes_action(action_list, start_date_val, end_date_val):
+    if action_list is not None:
+        if len(action_list) > 0:
+            action_list = ','.join(["'" + a + "'" for a in action_list])
+            sql = f""" AND concat(cast(orders.ORDER_ID_ANON as string), cast(orders.MSISDN_ANON as string))
+            in (SELECT DISTINCT concat(cast(ORDER_ID_ANON as string), cast(MSISDN_ANON as string)) FROM
+            `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+            WHERE ACTION_TYPE_DESC IN ({action_list})
+            AND ORDER_CREATION_DATE BETWEEN '{start_date_val}' AND '{end_date_val}')"""
         return sql
     return ''
-    
+
 
 def last_status_or_action_query(statuses, actions):
 
@@ -83,6 +87,7 @@ def last_status_or_action_query(statuses, actions):
             status_where = build_query(statuses, 'last_status_field')
             status_group = "ACTION_STATUS_DESC, "
 
+
     if actions is not None:
         if len(actions) > 0:
             actions = [a.lower() for a in actions]
@@ -94,6 +99,7 @@ def last_status_or_action_query(statuses, actions):
             action_group = "ACTION_TYPE_DESC, "
             action_where = build_query(actions, 'last_action_type')
             action_where = action_where.replace('last_action_type', "lower(last_action_type)")
+
 
     sql = f"""LEFT join
            (
@@ -125,7 +131,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
-    has_action = includes_action(has_action)
+    has_action = includes_action(has_action, start_date_val, end_date_val)
 
     dispute_join, dispute_where = dispute_query(dispute_val, start_date_val, end_date_val)
     fault_join, fault_where = fault_query(fault_val, start_date_val, end_date_val)
@@ -178,6 +184,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           FROM CTE WHERE 1 = 1 {hours_where}
           order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
+    print(query)
     return query
 
 

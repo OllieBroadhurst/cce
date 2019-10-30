@@ -121,7 +121,7 @@ bottom_filters = html.Div([
                         id='has_action_filter',
                         children='Has Action',
                         multi=True,
-                        options=deal_desc(),
+                        options=action_type(),
                         style={'height': filter_height, 'width': '250px'})],
                         style={'padding-top': filter_padding_top,
                                 'float': filter_float,
