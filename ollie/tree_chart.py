@@ -284,10 +284,15 @@ def find_journey(figure, paths, routes, x, y):
                 if routes[t]["Count"] > 1 or routes[t]["Count"] == 0:
                     customer_counts += 's'
 
+                customer_hours = f'{str(routes[t]["Duration"])} hour'
+                if routes[t]["Duration"] > 1 or routes[t]["Duration"] == 0:
+                    customer_hours += 's'
+
+
                 annotations.append(
                 go.layout.Annotation(x = (t[0][0] + t[1][0])/2,
                                     y = (t[0][1] + t[1][1])/2,
-                                    text = f'<b>{customer_counts}<br>{str(routes[t]["Duration"])} hours</b>',
+                                    text = f'<b>{customer_counts}<br>{customer_hours}</b>',
                                     font={'size':14},
                                     bgcolor='white',
                                     bordercolor='black'
