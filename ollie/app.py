@@ -116,6 +116,17 @@ bottom_filters = html.Div([
                                 'float': filter_float,
                                 'padding-right': filter_padding_right}),
 
+                    html.Div([html.H5(children='Includes Action', style=header_style),
+                    dcc.Dropdown(
+                        id='has_action_filter',
+                        children='Has Action',
+                        multi=True,
+                        options=deal_desc(),
+                        style={'height': filter_height, 'width': '250px'})],
+                        style={'padding-top': filter_padding_top,
+                                'float': filter_float,
+                                'padding-right': filter_padding_right}),
+
                     html.Div([html.H5(children='Has Dispute', style=header_style),
                     dcc.Dropdown(
                         id='dispute_filter',
@@ -180,14 +191,15 @@ states = [State('service_filter', 'value'), State('customer_type_filter', 'value
         State('deal_desc_filter', 'value'), State('action_status_filter', 'value'),
         State('date_filter', 'start_date'), State('date_filter', 'end_date'),
         State('dispute_filter', 'value'), State('final_action_filter', 'value'),
-        State('fault_filter', 'value'), State('hours_slider', 'value')]
+        State('fault_filter', 'value'), State('hours_slider', 'value'),
+        State('has_action_filter', 'value')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                 btn_history, current_fig, links, routes,
                 deals, status, start_date_val, end_date_val, dispute_val,
-                action_filter, fault_filter, min_hours):
+                action_filter, fault_filter, min_hours, has_action):
     history = json.loads(btn_history)
     links = json.loads(links)
     routes = json.loads(routes)
@@ -201,7 +213,8 @@ def generate_tree(click_btn, node_click, services, types,
     if str(click_btn) not in history.keys() and click_btn is not None:
         fig, links, routes = get_figure(None, services, types, deals, status,
                                         start_date_val, end_date_val, dispute_val,
-                                        action_filter, fault_filter, min_hours)
+                                        action_filter, fault_filter, min_hours,
+                                        has_action)
 
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}

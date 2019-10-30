@@ -61,14 +61,14 @@ def date_query(start_date_val, end_date_val):
     return f"{min_date_field},", min_date_criteria
 
 
-def has_action(action_list):
+def includes_action(action_list):
     if actions is not None:
         if len(actions) > 0:
-            sql = f""" JOIN (SELECT DISTINCT ORDER_ID_ANON FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
-            WHERE ACTION_TYPE_DESC IN ({actions})) has_actions
-            on orders.ORDER_ID_ANON = has_actions.ORDER_ID_ANON"""
+            sql = f""" AND orders.ACTION_TYPE_DESC in (SELECT DISTINCT ORDER_ID_ANON FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+            WHERE ACTION_TYPE_DESC IN ({actions}))"""
         return sql
     return ''
+    
 
 def last_status_or_action_query(statuses, actions):
 
@@ -120,11 +120,13 @@ def build_min_hours(min_hours):
 
 def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
                     start_date_val, end_date_val, dispute_val, action_filter,
-                    fault_val, min_hours):
+                    fault_val, min_hours, has_action):
 
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
+    has_action = includes_action(has_action)
+
     dispute_join, dispute_where = dispute_query(dispute_val, start_date_val, end_date_val)
     fault_join, fault_where = fault_query(fault_val, start_date_val, end_date_val)
     hours_sql_field, hours_where = build_min_hours(min_hours)
@@ -162,6 +164,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            {customer_type}
            {service_type}
            {deal_desc}
+           {has_action}
            {action_status_where}
            {dispute_where}
            {fault_where}

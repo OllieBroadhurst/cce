@@ -21,7 +21,7 @@ chart_height = 700
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, start_date_val=None, end_date_val=None,
                 dispute_val=None, action_filter=None, fault_filter=None,
-                min_hours=None):
+                min_hours=None, has_action=None):
     """
     df:             provide a custom data frame for the function to work with.
                     Not used really
@@ -39,6 +39,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
     action_filter:  the final action of that order
     fault_filter:   whether or not the customer lodged a fault
     min_hours:      the minimum nuber of journey hours
+    has_action:     returns orders that, over time, have contained any of the
+                    actions specified
     """
 
     hover_item_limit = 5
@@ -49,7 +51,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
                                             deals, action_status, start_date_val,
                                             end_date_val, dispute_val, action_filter,
-                                            fault_filter, min_hours),
+                                            fault_filter, min_hours, has_action),
                                             project_id='bcx-insights',
                                             dialect='standard')
 
