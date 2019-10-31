@@ -87,7 +87,6 @@ def last_status_or_action_query(statuses, actions):
             status_where = build_query(statuses, 'last_status_field')
             status_group = "ACTION_STATUS_DESC, "
 
-
     if actions is not None:
         if len(actions) > 0:
             actions = [a.lower() for a in actions]
@@ -100,18 +99,20 @@ def last_status_or_action_query(statuses, actions):
             action_where = build_query(actions, 'last_action_type')
             action_where = action_where.replace('last_action_type', "lower(last_action_type)")
 
+    if status_field != '' and action_field != '':
+        sql = f"""LEFT join
+               (
+               SELECT DISTINCT ORDER_ID_ANON, {action_field} {status_field} MSISDN_ANON
+                 FROM
+                `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
+                ) last_status
 
-    sql = f"""LEFT join
-           (
-           SELECT DISTINCT ORDER_ID_ANON, {action_field} {status_field} MSISDN_ANON
-             FROM
-            `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
-            ) last_status
+                on last_status.ORDER_ID_ANON = orders.ORDER_ID_ANON and
+                last_status.MSISDN_ANON = orders.MSISDN_ANON"""
 
-            on last_status.ORDER_ID_ANON = orders.ORDER_ID_ANON and
-            last_status.MSISDN_ANON = orders.MSISDN_ANON"""
-
-    return sql, status_where + ' ' + action_where
+        return sql, status_where + ' ' + action_where
+    else:
+        return ''
 
 
 def build_min_hours(min_hours):
@@ -184,6 +185,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           FROM CTE WHERE 1 = 1 {hours_where}
           order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
 
+    print(query)
     return query
 
 
