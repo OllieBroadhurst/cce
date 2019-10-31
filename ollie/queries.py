@@ -112,7 +112,7 @@ def last_status_or_action_query(statuses, actions):
 
         return sql, status_where + ' ' + action_where
     else:
-        return ''
+        return '', ''
 
 
 def build_min_hours(min_hours):
@@ -148,12 +148,12 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           SELECT DISTINCT
           orders.ACCOUNT_NO_ANON,
           orders.ORDER_CREATION_DATE,
+          MIN(orders.ORDER_CREATION_DATE),
           {min_date_field}
           {hours_sql_field}
           orders.ORDER_ID_ANON,
           orders.MSISDN_ANON,
-          ACTION_TYPE_DESC,
-          IFNULL(timestamp_diff(LAG(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON order by ORDER_CREATION_DATE DESC), ORDER_CREATION_DATE, HOUR), 0) Duration
+          ACTION_TYPE_DESC
            FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon` orders
 
            LEFT JOIN
@@ -177,13 +177,53 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
            {fault_where}
 
            {min_date_criteria}
-          )
+          ),
+
+          STAGES_ADDED AS (
 
           SELECT ACCOUNT_NO_ANON, ORDER_CREATION_DATE, ORDER_ID_ANON,
-          MSISDN_ANON, ACTION_TYPE_DESC, Duration,
-          ROW_NUMBER() OVER (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_CREATION_DATE, ACTION_TYPE_DESC) Stage
-          FROM CTE WHERE 1 = 1 {hours_where}
-          order by ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE DESC"""
+          MSISDN_ANON, ACTION_TYPE_DESC,
+          DENSE_RANK() OVER (PARTITION BY ORDER_ID_ANON ORDER BY
+
+          CAST (
+            CONCAT(
+              CAST(EXTRACT(YEAR FROM ORDER_CREATION_DATE) as STRING),
+              CAST(EXTRACT(MONTH FROM ORDER_CREATION_DATE) as STRING),
+              CAST(EXTRACT(DAY FROM ORDER_CREATION_DATE) as STRING),
+              CAST(EXTRACT(MINUTE FROM ORDER_CREATION_DATE) as STRING),
+              CAST(EXTRACT(SECOND FROM ORDER_CREATION_DATE) as STRING)
+                  )
+          as INT64)
+
+          ) Stage
+
+          FROM CTE WHERE 1 = 1
+          {hours_where})
+
+          SELECT DISTINCT
+            ACCOUNT_NO_ANON,
+            ORDER_CREATION_DATE,
+            STAGES_ADDED.ORDER_ID_ANON,
+            STAGES_ADDED.MSISDN_ANON,
+            ACTION_TYPE_DESC,
+            STAGES_ADDED.Stage,
+            STAGES_ADDED.Stage + 1 Next_Stage,
+            IFNULL(Durations.Duration, 0) Duration
+
+          FROM STAGES_ADDED
+
+          LEFT JOIN
+
+          (SELECT * FROM
+            (SELECT Stage, ORDER_ID_ANON,
+            timestamp_diff(ORDER_CREATION_DATE, LAG(ORDER_CREATION_DATE) OVER (PARTITION BY ORDER_ID_ANON ORDER BY Stage), HOUR) Duration
+            FROM STAGES_ADDED)
+          WHERE Duration is not Null and Duration > 0
+          ) Durations
+
+          on Durations.Stage = STAGES_ADDED.Stage
+          and Durations.ORDER_ID_ANON = STAGES_ADDED.ORDER_ID_ANON
+          order by STAGES_ADDED.ORDER_ID_ANON, STAGES_ADDED.Stage, STAGES_ADDED.MSISDN_ANON"""
 
     print(query)
     return query

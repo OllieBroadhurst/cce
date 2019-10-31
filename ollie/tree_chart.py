@@ -18,6 +18,27 @@ default_axis_params = dict(showgrid=False,
 chart_margin = dict(b=0,l=5,r=5,t=0)
 chart_height = 700
 
+
+def get_all_nodes(data_frame):
+    all_nodes_count = data_frame['Coordinates'].value_counts()
+    all_nodes_actions = data_frame[['Coordinates', 'ACTION_TYPE_DESC']].set_index('Coordinates').drop_duplicates()
+    all_nodes = pd.merge(all_nodes_count, all_nodes_actions, left_index=True, right_index=True)
+    all_nodes.columns = ['count', 'label']
+    all_nodes.T.to_dict()
+    all_nodes_count = None
+    all_nodes_actions = None
+    return all_nodes
+
+
+def get_routes(data_frame):
+    data_frame['Route'] = tuple(data_frame[['Coordinates', 'Coordinates_Next']].itertuples(index=False, name=None))
+    routes= data_frame[['Route', 'Duration_Next']].dropna().groupby(['Route']).agg(['sum', 'count'])
+    routes = routes['Duration_Next']
+    routes.columns = ['Duration', 'Count']
+    routes = routes['Duration'].T.to_dict()
+    return routes
+
+
 def get_figure(df=None, service_types=None, customer_types=None,
                 deals=None, action_status=None, start_date_val=None, end_date_val=None,
                 dispute_val=None, action_filter=None, fault_filter=None,
@@ -44,8 +65,6 @@ def get_figure(df=None, service_types=None, customer_types=None,
     """
 
     hover_item_limit = 5
-    all_nodes = {}
-    links = {}
 
     if df is None:
         df = pd.io.gbq.read_gbq(criteria_tree_sql(service_types, customer_types,
@@ -78,50 +97,39 @@ def get_figure(df=None, service_types=None, customer_types=None,
     TOP = HEIGHT * 0.9
     LEVEL_HEIGHT = HEIGHT // len(df)
 
-    w_spacing = (WIDTH/df[['ACTION_TYPE_DESC', 'Stage']].drop_duplicates()['Stage'].value_counts()).round(2).to_dict()
-    h_spacing = round(HEIGHT/(df['Stage'].max()), 2) * 0.85
+    max_stage_count = df['Stage'].value_counts().max()
 
-    for i in range(df['Stage'].min(), df['Stage'].max() + 1):
-        reasons = df.loc[df['Stage'] == i, 'ACTION_TYPE_DESC'].value_counts().to_dict()
+    w_spacing = round(WIDTH/max_stage_count, 2)
+    h_spacing = round(HEIGHT/df['Stage'].max() * 0.85, 2)
 
-        for j, r in enumerate(reasons.keys()):
-            coords = (w_spacing[i] * (j + 0.5), TOP - i * h_spacing)
-            all_nodes[coords] = {'label': r, 'stage': i}
+    width_lookup =df[['ACTION_TYPE_DESC', 'Stage']].groupby(['ACTION_TYPE_DESC', 'Stage']).first()
+    width_lookup['Width'] = range(len(width_lookup))
 
-    all_stages = [v['stage'] for v in all_nodes.values()]
-    all_labels = [v['label'] for v in all_nodes.values()]
+    node_number = 0
+    coordinates = {}
+    for _, row in df[['ACTION_TYPE_DESC', 'Stage']].iterrows():
+      current_action = row['ACTION_TYPE_DESC']
+      current_stage = row['Stage']
 
-    coords_map = pd.Series(list(all_nodes.keys()), index=[all_stages, all_labels], name='Position')
+      coordinates[node_number] = (w_spacing * width_lookup.loc[(current_action, current_stage), 'Width'], round(TOP - h_spacing * current_stage, 2))
+      node_number += 1
 
-    df = pd.merge(df, pd.Series(coords_map), how='left', left_on=['Stage', 'ACTION_TYPE_DESC'], right_index=True)
+    coordinates_series = pd.Series(coordinates, name='Coordinates')
+    df = df.join(coordinates_series)
+    df = df.merge(df[['Stage', 'Coordinates', 'ORDER_ID_ANON', 'Duration']],
+              how='left',
+              left_on=['ORDER_ID_ANON', 'Next_Stage'],
+              right_on=['ORDER_ID_ANON', 'Stage'],
+              suffixes=('', '_Next'))
+    df = df.drop(['Stage_Next', 'Duration'], axis=1) # Keep Duration_Next
 
-    df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage', 'Position', 'Duration']].groupby(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage']).agg({'Position': 'first', 'Duration': 'mean'})
-    df['Link'] = df['Position'].shift(-1)
+    routes = get_routes(df)
+    all_nodes = get_all_nodes(df)
 
-    df = df.sort_index(level=['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON', 'Stage'],
-    ascending=[False, True, True, True])
+    all_stages = df['Stage'].drop_duplicates().tolist()
+    all_labels = df['Label'].drop_duplicates().tolist()
 
-    counts = df['Position'].value_counts().to_dict()
-    for k, v in counts.items():
-        all_nodes[k]['count'] = v
-    counts = None
-
-    routes = df.loc[:, ['Position', 'Link', 'Duration']]
-    routes['Count'] = 1
-    routes = routes.groupby(['Position', 'Link']).agg({'Count': 'sum', 'Duration': 'max'})
-
-    routes = routes.T.to_dict()
-
-    routes = {k: v for k, v in routes.items() if k[0][1] > k[1][1]}
-
-    for ix, l in df.iterrows():
-        if type(l['Link']) is tuple and l['Position'][1] > l['Link'][1]:
-            if l['Position'] not in links.keys():
-                links[l['Position']] = {'joins':[], 'stage': ix[3]}
-
-            if l['Link'] not in links[l['Position']]['joins']:
-                links[l['Position']]['joins'].append(l['Link'])
-
+    links = df[['Coordinates', 'Coordinates_Next']].dropna().groupby('Coordinates')['Coordinates_Next'].apply(list).to_dict()
 
     colours = ['green'] * len(all_nodes)
 
@@ -167,7 +175,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
     for node, v in all_nodes.items():
         lab = v['label']
         if v['count'] <= hover_item_limit:
-            node_df = df[df['Position'] == node]
+            node_df = df[df['Coordinates'] == node]
             accs = [str(acc) for acc in node_df.index.get_level_values(0)]
             ids = [str(id) for id in node_df.index.get_level_values(1)]
             devices = [str(dev) for dev in node_df.index.get_level_values(2)]
@@ -214,7 +222,7 @@ def highlight_route(paths, node):
         for n in node:
             n = tuple(n)
             if paths.get(n) is not None:
-                for v in paths[n]['joins']:
+                for v in paths[n]:
 
                     route_x.append([n[0], v[0], None])
                     route_y.append([n[1], v[1], None])
