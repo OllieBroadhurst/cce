@@ -1,6 +1,6 @@
 pandas
-dash==1.2.0
-dash-daq==0.1.0
+dash
+dash-daq
 matplotlib
 google
 google-auth

@@ -1,12 +1,7 @@
-
-from datetime import datetime as dt
-
-import pandas as pd
-
 def build_query(iterable, field_name):
     if iterable is not None:
         if len(iterable) > 0:
-            iterable = ','.join(["'"+s+"'" for s in iterable])
+            iterable = ','.join(["'" + s + "'" for s in iterable])
             iterable = f'and {field_name} IN ({iterable})'
             return iterable
         else:
@@ -55,7 +50,7 @@ def date_query(start_date_val, end_date_val):
     min_date_field = "MIN(orders.ORDER_CREATION_DATE)"
     min_date_criteria = f"""GROUP BY orders.ORDER_CREATION_DATE,
                         orders.ORDER_ID_ANON, orders.MSISDN_ANON,
-                        orders.ACTION_TYPE_DESC, ACCOUNT_NO_ANON
+                        orders.ACTION_TYPE_DESC, ACCOUNT_NO_ANON, ACTION_STATUS_DESC
                         HAVING {min_date_field} BETWEEN '{start_date_val}' AND '{end_date_val}'"""
 
     return f"{min_date_field},", min_date_criteria
@@ -75,14 +70,13 @@ def includes_action(action_list, start_date_val, end_date_val):
 
 
 def last_status_or_action_query(statuses, actions):
-
     status_field, status_where, status_group = '', '', ''
     action_field, action_where, action_group = '', '', ''
 
     if statuses is not None:
         if len(statuses) > 0:
             status_field = """LAST_VALUE(ACTION_STATUS_DESC) OVER
-            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE, ACTION_TYPE_DESC
+            (PARTITION BY orders.ACCOUNT_NO_ANON, orders.ORDER_ID_ANON ORDER BY ACCOUNT_NO_ANON, ORDER_ID_ANON, ORDER_CREATION_DATE
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_status_field,"""
             status_where = build_query(statuses, 'last_status_field')
             status_group = "ACTION_STATUS_DESC, "
@@ -92,7 +86,7 @@ def last_status_or_action_query(statuses, actions):
             actions = [a.lower() for a in actions]
 
             action_field = """LAST_VALUE(ACTION_TYPE_DESC) OVER
-            (PARTITION BY ORDER_ID_ANON, MSISDN_ANON ORDER BY ORDER_ID_ANON, MSISDN_ANON, ORDER_CREATION_DATE, ACTION_TYPE_DESC
+            (PARTITION BY orders.ACCOUNT_NO_ANON, orders.ORDER_ID_ANON ORDER BY ACCOUNT_NO_ANON, ORDER_ID_ANON, ORDER_CREATION_DATE
             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) last_action_type,"""
 
             action_group = "ACTION_TYPE_DESC, "
@@ -117,18 +111,18 @@ def last_status_or_action_query(statuses, actions):
 
 def build_min_hours(min_hours):
     if min_hours > 0:
-        sql = """TIMESTAMP_DIFF(MAX(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON),
-                MIN(ORDER_CREATION_DATE) OVER (Partition by orders.ORDER_ID_ANON, orders.MSISDN_ANON), HOUR) j_duration,"""
+        sql = """TIMESTAMP_DIFF(MAX(ORDER_CREATION_DATE) OVER (Partition by orders.ACCOUNT_NO_ANON, orders.ORDER_ID_ANON),
+                MIN(ORDER_CREATION_DATE) OVER (Partition by orders.ACCOUNT_NO_ANON, orders.ORDER_ID_ANON), HOUR) j_duration,"""
 
         min_hours_where = f'AND j_duration >= {min_hours}'
 
         return sql, min_hours_where
     return '', ''
 
-def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
-                    start_date_val, end_date_val, dispute_val, action_filter,
-                    fault_val, min_hours, has_action):
 
+def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
+                      start_date_val, end_date_val, dispute_val, action_filter,
+                      fault_val, min_hours, has_action):
     service_type = build_query(service_type, 'SERVICE_TYPE')
     customer_type = build_query(customer_type, 'CUSTOMER_TYPE_DESC')
     deal_desc = build_query(deal_desc, 'DEAL_DESC')
@@ -138,11 +132,13 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
     fault_join, fault_where = fault_query(fault_val, start_date_val, end_date_val)
     hours_sql_field, hours_where = build_min_hours(min_hours)
 
-
     action_status_subquery, action_status_where = last_status_or_action_query(action_status, action_filter)
 
     if start_date_val is not None and end_date_val is not None:
         min_date_field, min_date_criteria = date_query(start_date_val, end_date_val)
+    else:
+        min_date_field = ''
+        min_date_criteria = ''
 
     query = f"""WITH CTE as (
           SELECT DISTINCT
@@ -153,7 +149,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           {hours_sql_field}
           orders.ORDER_ID_ANON,
           orders.MSISDN_ANON,
-          ACTION_TYPE_DESC
+          CONCAT(ACTION_TYPE_DESC, ' (', ACTION_STATUS_DESC, ')') ACTION_TYPE_DESC
            FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon` orders
 
            LEFT JOIN
@@ -183,15 +179,14 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
 
           SELECT ACCOUNT_NO_ANON, ORDER_CREATION_DATE, ORDER_ID_ANON,
           MSISDN_ANON, ACTION_TYPE_DESC,
-          DENSE_RANK() OVER (PARTITION BY ORDER_ID_ANON ORDER BY
+          DENSE_RANK() OVER (PARTITION BY ACCOUNT_NO_ANON, ORDER_ID_ANON ORDER BY
 
           CAST (
             CONCAT(
               CAST(EXTRACT(YEAR FROM ORDER_CREATION_DATE) as STRING),
               CAST(EXTRACT(MONTH FROM ORDER_CREATION_DATE) as STRING),
               CAST(EXTRACT(DAY FROM ORDER_CREATION_DATE) as STRING),
-              CAST(EXTRACT(MINUTE FROM ORDER_CREATION_DATE) as STRING),
-              CAST(EXTRACT(SECOND FROM ORDER_CREATION_DATE) as STRING)
+              CAST(EXTRACT(MINUTE FROM ORDER_CREATION_DATE) as STRING)
                   )
           as INT64)
 
@@ -216,7 +211,7 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
 
           (SELECT * FROM
             (SELECT Stage, ORDER_ID_ANON,
-            timestamp_diff(ORDER_CREATION_DATE, LAG(ORDER_CREATION_DATE) OVER (PARTITION BY ORDER_ID_ANON ORDER BY Stage), HOUR) Duration
+            timestamp_diff(ORDER_CREATION_DATE, LAG(ORDER_CREATION_DATE) OVER (PARTITION BY ACCOUNT_NO_ANON, ORDER_ID_ANON ORDER BY Stage), HOUR) Duration
             FROM STAGES_ADDED)
           WHERE Duration is not Null and Duration > 0
           ) Durations
@@ -225,9 +220,4 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           and Durations.ORDER_ID_ANON = STAGES_ADDED.ORDER_ID_ANON
           order by STAGES_ADDED.ORDER_ID_ANON, STAGES_ADDED.Stage, STAGES_ADDED.MSISDN_ANON"""
 
-    print(query)
     return query
-
-
-if __name__ == '__main__':
-    print(default_tree_sql())
