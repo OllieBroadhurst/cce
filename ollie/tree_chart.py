@@ -40,6 +40,38 @@ def get_routes(data_frame):
     return routes
 
 
+def get_coordinates(data_frame):
+    width_lookup = data_frame[['Stage', 'ACTION_TYPE_DESC']].drop_duplicates()
+
+    stage_counts = width_lookup.groupby('Stage')['ACTION_TYPE_DESC'].count()
+
+    width_lookup['Counter'] = range(len(width_lookup))
+    width_lookup = width_lookup.set_index(['Stage', 'ACTION_TYPE_DESC'])
+    width_lookup = width_lookup.groupby(axis=0, level=0).rank(axis=1, method='dense', ascending=True)
+    width_lookup = width_lookup.sort_index()
+
+    width = data_frame['Stage'].value_counts().max() * 0.75
+    height = 10
+    top = height * 0.9
+    h_spacing = round(height / data_frame['Stage'].max() * 0.85, 2)
+
+    node_number = 0
+    coordinates = {}
+    for _, row in data_frame[['ACTION_TYPE_DESC', 'Stage']].iterrows():
+
+        current_action = row['ACTION_TYPE_DESC']
+        current_stage = row['Stage']
+
+        stage_count = stage_counts[current_stage]
+        w_spacing = round(width / stage_count, 2)
+
+        coordinates[node_number] = (w_spacing//2 + w_spacing * (width_lookup.loc[(current_stage, current_action), 'Counter'] - 1),
+                                    round(top - h_spacing * current_stage, 2))
+        node_number += 1
+
+    return coordinates
+
+
 def get_figure(df=None, service_types=None, customer_types=None,
                deals=None, action_status=None, start_date_val=None, end_date_val=None,
                dispute_val=None, action_filter=None, fault_filter=None,
@@ -92,35 +124,9 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
     df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].fillna('Other')
 
-    width_lookup = df[['Stage', 'ACTION_TYPE_DESC']].drop_duplicates()
-
-    stage_counts = width_lookup.groupby('Stage')['ACTION_TYPE_DESC'].count()
-
-    width_lookup['Counter'] = range(len(width_lookup))
-    width_lookup = width_lookup.set_index(['Stage', 'ACTION_TYPE_DESC'])
-    width_lookup = width_lookup.groupby(axis=0, level=0).rank(axis=1, method='dense', ascending=True)
-    width_lookup = width_lookup.sort_index()
-
-    width = df['Stage'].value_counts().max() * 0.75
-    height = 10
-    top = height * 0.9
-    h_spacing = round(height / df['Stage'].max() * 0.85, 2)
-
-    node_number = 0
-    coordinates = {}
-    for _, row in df[['ACTION_TYPE_DESC', 'Stage']].iterrows():
-
-        current_action = row['ACTION_TYPE_DESC']
-        current_stage = row['Stage']
-
-        stage_count = stage_counts[current_stage]
-        w_spacing = round(width / stage_count, 2)
-
-        coordinates[node_number] = (w_spacing//2 + w_spacing * (width_lookup.loc[(current_stage, current_action), 'Counter'] - 1),
-                                    round(top - h_spacing * current_stage, 2))
-        node_number += 1
-
+    coordinates = get_coordinates(df)
     coordinates_series = pd.Series(coordinates, name='Coordinates')
+
     df = df.join(coordinates_series)
     df = df.merge(df[['Stage', 'Coordinates', 'ORDER_ID_ANON', 'Duration']],
                   how='left',
@@ -136,15 +142,14 @@ def get_figure(df=None, service_types=None, customer_types=None,
         list).to_dict()
 
     colours = ['green'] * len(all_nodes)
-
     node_x = [x[0] for x in all_nodes.keys()]
-
     node_y = [y[1] for y in all_nodes.keys()]
 
-    arrows = []
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
     mean_duration = np.mean([v['Duration'] for v in routes. values()])
+
+    arrows = []
 
     for k, v in routes.items():
 
@@ -182,7 +187,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
         for node, v in all_nodes.items():
             lab = v['label']
 
-            if v['stage'] < stage_counts.index[-1]:
+            if v['stage'] < df['Stage'].value_counts().index[-1]:
                 text_positions.append('bottom center')
             else:
                 text_positions.append('top center')
