@@ -28,7 +28,7 @@ filter_font_size = '12px'
 graph = html.Div(dcc.Graph(id='tree_chart',
                            figure=default_chart(), style={'overflow-y': 'hidden'}),
                  style={'padding-top': '5px', 'padding-right': '5px',
-                        'float': 'right', 'width': '100%'}
+                        'float': 'right', 'width': '95%'}
                  )
 
 top_filters = html.Div([
@@ -178,10 +178,10 @@ layout = html.Div([
     html.Div(children='{}', id='desc_map', style={'display': 'none'})
 ],
     style={'top':0,
-           'left':0,
+           'right':0,
            'width':'100%',
-           'float': 'right',
-           #'position':'absolute',
+           #'float': 'right',
+           'position':'absolute',
            'overflow-y': 'hidden'
           })
 
