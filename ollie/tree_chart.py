@@ -177,33 +177,33 @@ def get_figure(df=None, service_types=None, customer_types=None,
             yref='y',
             standoff=15))
 
-        newline_labels = [v['label'].replace(' ', '<br>') for v in all_nodes.values()]
-        hover_labels = []
-        text_positions = []
+    newline_labels = [v['label'].replace(' ', '<br>') for v in all_nodes.values()]
+    hover_labels = []
+    text_positions = []
 
-        node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
-        'MSISDN_ANON', 'Coordinates']].drop_duplicates()
+    node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
+    'MSISDN_ANON', 'Coordinates']].drop_duplicates()
 
-        for node, v in all_nodes.items():
-            lab = v['label']
+    for node, v in all_nodes.items():
+        lab = v['label']
 
-            if v['stage'] < df['Stage'].value_counts().index[-1]:
-                text_positions.append('bottom center')
-            else:
-                text_positions.append('top center')
+        if v['stage'] < df['Stage'].value_counts().index[-1]:
+            text_positions.append('bottom center')
+        else:
+            text_positions.append('top center')
 
-            if v['count'] <= hover_item_limit:
-                node_data = node_df[node_df['Coordinates'] == node]
-                accs = [str(acc) for acc in node_data['ACCOUNT_NO_ANON']]
-                ids = [str(ids) for ids in node_data['ORDER_ID_ANON']]
-                devices = [str(dev) for dev in node_data['MSISDN_ANON']]
+        if v['count'] <= hover_item_limit:
+            node_data = node_df[node_df['Coordinates'] == node]
+            accs = [str(acc) for acc in node_data['ACCOUNT_NO_ANON']]
+            ids = [str(ids) for ids in node_data['ORDER_ID_ANON']]
+            devices = [str(dev) for dev in node_data['MSISDN_ANON']]
 
-                all_nodes[node]['accounts'] = accs
+            all_nodes[node]['accounts'] = accs
 
-                hover_labels.append(f'{lab} x = {node[0]} y = {node[1]} stage = {v["stage"]}<br>Account - Order ID - Device<br>' + '<br>'.join(
-                    [f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
-            else:
-                hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
+            hover_labels.append(f'{lab}<br>Account - Order ID - Device<br>' + '<br>'.join(
+                [f'{i[0]} - {i[1]} - {i[2]}' for i in zip(accs, ids, devices)]))
+        else:
+            hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
     traces = go.Scatter(
         x=node_x, y=node_y,
