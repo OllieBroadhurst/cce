@@ -16,7 +16,7 @@ from apps.filters import deal_desc, action_status, action_type
 from apps.queries import criteria_tree_sql
 
 from app import app
-from apps import single_journey,scatter_agg
+from apps import single_journey,scatter_agg,stages_network
 
 
 sidebar_header = dbc.Row(
@@ -76,9 +76,10 @@ sidebar = html.Div(
         dbc.Collapse(
             dbc.Nav(
                 [
-                    dbc.NavLink("NetworkX", href="/page-1", id="page-1-link"),
-                    dbc.NavLink("Plotly", href="/page-2", id="page-2-link"),
-                    dbc.NavLink("Cytoscape", href="/page-3", id="page-3-link"),
+                    dbc.NavLink("Overview", href="/page-1", id="page-1-link"),
+                    dbc.NavLink("Order Aggregate", href="/page-4", id="page-4-link"),
+                    dbc.NavLink("Customer Aggregate", href="/page-2", id="page-2-link"),
+                    dbc.NavLink("Single Journey", href="/page-3", id="page-3-link"),
                 ],
                 vertical=True,
                 pills=True,
@@ -124,6 +125,9 @@ def render_page_content(pathname):
     elif pathname == "/page-3":
         #time.sleep(1)
         return single_journey.layout
+    elif pathname == "/page-4":
+        #time.sleep(1)
+        return stages_network.layout
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
