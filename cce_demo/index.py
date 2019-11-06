@@ -16,7 +16,7 @@ from apps.filters import deal_desc, action_status, action_type
 from apps.queries import criteria_tree_sql
 
 from app import app
-from apps import single_journey,scatter_agg,stages_network
+from apps import single_journey,scatter_agg,stages_network, orders_sunburst
 
 
 sidebar_header = dbc.Row(
@@ -118,7 +118,7 @@ def toggle_active_links(pathname):
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
         #time.sleep(1)
-        return html.P("This is the content of page 1!")
+        return orders_sunburst.layout#html.P("This is the content of page 1!")
     elif pathname == "/page-2":
         #time.sleep(1)
         return scatter_agg.layout

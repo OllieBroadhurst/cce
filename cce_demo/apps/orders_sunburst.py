@@ -2,51 +2,77 @@ import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-from Sunburst_Queries import Overall_Query
+#from Sunburst_Queries import Overall_Query
 from datetime import datetime as dt, timedelta
 import pandas as pd
 import numpy as np
 
-from dash_sunburst import Sunburst
+from app import app
 
-app = dash.Dash('')
+Overall_Query = """with cte as (
+SELECT DISTINCT
+orders.source,
+orders.ORIGINAL_SALES_CHANNEL_DESC,
+orders.ACCOUNT_NO_ANON,  
+if(disputes.ACCOUNT_NO_ANON is null, 0, 1) has_dispute
+FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon` orders
+left join (SELECT DISTINCT ACCOUNT_NO_ANON FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`) disputes
+on orders.ACCOUNT_NO_ANON = disputes.ACCOUNT_NO_ANON)
 
-app.scripts.config.serve_locally = True
-app.css.config.serve_locally = True
+select * except(CUSTOMER_NO_ANON) from cte
+
+join  (select 
+CUSTOMER_BRAND,
+SERVICE_TYPE,
+CUSTOMER_NO_ANON from `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` 
+
+group by 
+CUSTOMER_NO_ANON,
+CUSTOMER_BRAND,
+SERVICE_TYPE,
+CREDIT_CLASS_DESC,
+SOURCE) customers
+
+on customers.CUSTOMER_NO_ANON = cte.ACCOUNT_NO_ANON
+GROUP BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC ,cte.ACCOUNT_NO_ANON ,cte.has_dispute,customer_brand,service_type
+ORDER BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC DESC
+limit 500000
+"""
 
 Data_df = pd.read_gbq(Overall_Query,
                 project_id = 'bcx-insights',
                 dialect = 'standard')
+                
+                
+label = ['Orders']
+parent = ['']
+value = [len(Data_df)]
 
-Source_List = Data_df.source.value_counts().to_dict()
+for s in Data_df['source'].unique():
+  label.append(s)
+  parent.append('Orders')
+  value.append(len(Data_df[Data_df['source']==s]))
 
-Source_List
+  temp_df = Data_df[Data_df['source']==s]
+  for osc in temp_df['ORIGINAL_SALES_CHANNEL_DESC'].unique():
+    label.append(osc)
+    parent.append(s)
+    value.append(len(temp_df[temp_df['ORIGINAL_SALES_CHANNEL_DESC']==osc]))
+    
+    
+import plotly.graph_objects as go
 
-for k in Source_List.keys():
-    (k, Source_List[k])
+fig =go.Figure(go.Sunburst(
+    labels=label,
+    parents=parent,
+    values=value,
+    branchvalues="total",
+    maxdepth=2
+))
 
-sunburst_data = {
-    'name': 'house',
-    'children': [
-        {
-            'name': 'living room',
-            'children': [
-                {'name': 'Fixed', 'size': Source_List['F']},
-                {'name': 'Mobile', 'size': Source_List['M']},
-            ]
-        },
-        {
-            'name': 'kitchen',
-            'children': [
-                {'name': 'Fixed', 'size': Source_List['F']},
-                {'name': 'Mobile', 'size': Source_List['M']},
-            ]
-        },
-    ]
-}
+fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
 
-
-app.layout = html.Div([
+layout = html.Div([
     html.H1('Telkom Customer Sunburst',style={'text-align':'center'}),
     html.Div([dcc.DatePickerRange(
     display_format='YYYY-MM-DD',
@@ -57,12 +83,10 @@ app.layout = html.Div([
     start_date=(dt.today() - timedelta(days=30)).date()
     )], style = {'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center'}), 
     html.Div(
-        [Sunburst(id='sun', data=sunburst_data)],
+        [dcc.Graph(figure=fig)],
         style={'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'}),
     html.Div(id='output', style={'clear': 'both','display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'})
 ])
-
-app.config['suppress_callback_exceptions']=True
 
 @app.callback(Output('output', 'children'), [Input('sun', 'selectedPath')])
 def display_selected(selected_path):
@@ -137,5 +161,3 @@ def display_graph(data, selected_path):
         'layout': layout
     }
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
