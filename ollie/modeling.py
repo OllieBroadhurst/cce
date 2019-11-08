@@ -12,7 +12,7 @@ import os
 
 import plotly.graph_objects as go
 
-def get_data(row_limit=0):
+def get_data(row_limit, from_date_customer, from_date_dispute):
     if row_limit > 0:
         row_limit = 'limit ' + str(row_limit)
     else:
@@ -48,10 +48,10 @@ def get_data(row_limit=0):
             FROM `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` Customers
             LEFT JOIN
             (SELECT DISTINCT ACCOUNT_NO_ANON, RESOLUTION_DATE FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
-            WHERE STATUS_DESC = 'Justified' and RESOLUTION_DATE >= '2019-01-01') Disputes
+            WHERE STATUS_DESC = 'Justified' and RESOLUTION_DATE >= '{0}') Disputes
             on Disputes.ACCOUNT_NO_ANON = Customers.CUSTOMER_NO_ANON
-            WHERE BILL_MONTH >= '2019-03-01'
-            {}""".format(row_limit)
+            WHERE BILL_MONTH >= '{1}'
+            {2}""".format(from_date_customer, from_date_dispute, row_limit)
 
     df = pd.io.gbq.read_gbq(query, project_id='bcx-insights', dialect='standard')
 
@@ -79,8 +79,8 @@ def preprocess(df):
 
 def upsample(data, repetitions):
     positive_samples = data[data['Within_Dispute_Period'] == 1]
-        for _ in range(repetitions):
-            data = data.append(positive_samples)
+    for _ in range(repetitions):
+        data = data.append(positive_samples)
     return data.reset_index(drop=True)
 
 
@@ -135,7 +135,16 @@ def predict_probs(x):
     return predictions
 
 
-def get_bar_graph(x_pred):
+def get_current_customer_data():
+    return get_data(100000, '2019-07-01', '2019-04-01')
+
+
+def default_risk_graph():
+    return go.Figure(data=[go.Bar(x=[], y=[])])
+
+
+def get_bar_graph():
+    x_pred = get_current_customer_data()
     graph_data = predict_probs(x_pred)
 
     graph_data = graph_data[graph_data['probability'] >= 0.3]
@@ -151,4 +160,8 @@ def get_bar_graph(x_pred):
     x = graph_data['bin']
     c = graph_data['category']
 
-    return x, y, c
+    fig = go.Figure(
+                data=[go.Bar(x=x, y=y)],
+                marker=dict(color=c))
+
+    return fig
