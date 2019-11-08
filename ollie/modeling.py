@@ -8,6 +8,8 @@ from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+import os
+
 import plotly.graph_objects as go
 
 def get_data(row_limit=0):
@@ -27,10 +29,7 @@ def get_data(row_limit=0):
             END as CUSTOMER_TYPE_DESC,
             OFFER_DESC,
             COMMITMENT_PERIOD,
-            DATA_USAGE_MEGABYTES,
             TOTAL_AMOUNT,
-            AVG(DATA_USAGE_MEGABYTES) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Avg_Usage,
-            STDDEV_POP(DATA_USAGE_MEGABYTES) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Std_Usage,
             AVG(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Avg_Amount,
             STDDEV_POP(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Std_Amount,
             CASE
@@ -53,7 +52,6 @@ def get_data(row_limit=0):
             on Disputes.ACCOUNT_NO_ANON = Customers.CUSTOMER_NO_ANON
             WHERE BILL_MONTH >= '2019-03-01'
             {}""".format(row_limit)
-
 
     df = pd.io.gbq.read_gbq(query, project_id='bcx-insights', dialect='standard')
 
@@ -110,9 +108,7 @@ def train_and_save_model():
     model.add(Dense(8, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
 
-
     es = EarlyStopping(monitor='val_loss', patience=3)
-
 
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
@@ -124,3 +120,35 @@ def train_and_save_model():
            batch_size=data_limit//5)
 
     model.save('dispute_model.h5')
+
+
+def predict_probs(x):
+    if 'model.h5' not in os.listdir():
+        train_and_save_model()
+
+    model = load_model('model.h5')
+
+    accounts = x['ACCOUNT_NO_ANON']
+    x = preprocess(x)
+
+    predictions = pd.DataFrame(model.predict(x), columns=['probability'], index=x.index)
+    return predictions
+
+
+def get_bar_graph(x_pred):
+    graph_data = predict_probs(x_pred)
+
+    graph_data = graph_data[graph_data['probability'] >= 0.3]
+    graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x <= 0.5 else 'orange' if x < 0.75 else 'red')
+    graph_data = graph_data.join(accounts)
+    graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
+    graph_data['bin'] = pd.cut(graph_data['probability'], bins=15).apply(lambda x: str(x.right) if x.left > graph_data['probability'].min() else '{0} - {1}'.format(x.left, x.right))
+    graph_data = graph_data.sort_values('bin')
+
+    graph_data = graph_data[['bin', 'CUSTOMER_NO_ANON', 'category']].groupby(['bin', 'category'], as_index=False).count()
+
+    y = graph_data['CUSTOMER_NO_ANON']
+    x = graph_data['bin']
+    c = graph_data['category']
+
+    return x, y, c
