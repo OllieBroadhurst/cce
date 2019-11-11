@@ -1,0 +1,942 @@
+Months_With_Offer
+Avg_Amount
+Std_Amount
+TOTAL_AMOUNT
+COMMITMENT_PERIOD_0
+COMMITMENT_PERIOD_12
+COMMITMENT_PERIOD_18
+COMMITMENT_PERIOD_24
+COMMITMENT_PERIOD_36
+COMMITMENT_PERIOD_48
+COMMITMENT_PERIOD_6
+COMMITMENT_PERIOD_60
+COMMITMENT_PERIOD_84
+CREDIT_CLASS_DESC_default credit class
+CREDIT_CLASS_DESC_high
+CREDIT_CLASS_DESC_low
+CREDIT_CLASS_DESC_medium
+CREDIT_CLASS_DESC_new
+CREDIT_CLASS_DESC_special
+CREDIT_CLASS_DESC_special low
+CUSTOMER_TYPE_DESC_Business
+CUSTOMER_TYPE_DESC_Consumer
+CUSTOMER_TYPE_DESC_Other
+OFFER_DESC_10GB+10GB Internet
+OFFER_DESC_10GB+10GB Internet Deal
+OFFER_DESC_4mbps Fibre Advanced Softcapped Bundle
+OFFER_DESC_8ta more
+OFFER_DESC_ATM Express Access
+OFFER_DESC_ATM Express CSS
+OFFER_DESC_ATM Express CSS PVC
+OFFER_DESC_Add-on SmartBroadband Wireless 100GB R999 Sim Only
+OFFER_DESC_Add-on SmartBroadband Wireless 10GB R299 Sim Only
+OFFER_DESC_Add-on SmartBroadband Wireless 20GB R399 Sim Only
+OFFER_DESC_Add-on SmartBroadband Wireless 30GB R499 Sim Only
+OFFER_DESC_Add-on SmartBroadband Wireless 50GB R699 Sim Only
+OFFER_DESC_Add-on SmartBroadband Wireless 5GB R199 Sim Only
+OFFER_DESC_Add-on SmartInternet 500MB Deal R39 SIM Only
+OFFER_DESC_Add-on SmartInternet 5GB Deal R199 SIM Only
+OFFER_DESC_Alliance Gateway Diginet
+OFFER_DESC_Awesome Broadband Deals
+OFFER_DESC_Awesome Broadband Deals Over 70 years
+OFFER_DESC_B315 Standalone Deal 2 (24 Months)
+OFFER_DESC_B315 Standalone Deal 3 (24 Months)
+OFFER_DESC_B315 Standalone Deal 4 (24 Months)
+OFFER_DESC_Basic Hosting CSS
+OFFER_DESC_Basic Hosting Service
+OFFER_DESC_Basic Machine Hosting
+OFFER_DESC_BizTalk Fibre
+OFFER_DESC_Bulk MMS
+OFFER_DESC_Bulk SMS
+OFFER_DESC_Business BB Awesome Deal
+OFFER_DESC_Business DSL 10Mbps_Promo (24 Month)
+OFFER_DESC_Business ECDSL
+OFFER_DESC_Business ECDSL 12 Month Term
+OFFER_DESC_Business ECDSL Bundle
+OFFER_DESC_Business ECDSL Bundle 12 Month Term
+OFFER_DESC_Business Fibre (100GB) Premium Plus
+OFFER_DESC_Business Fibre (40Mbps)(200GB)(24 Months)
+OFFER_DESC_Business Fibre 10Mbps_Promo (24 Month)
+OFFER_DESC_Business Lite Uncapped Deluxe
+OFFER_DESC_Business Lite Uncapped Fibre Elite
+OFFER_DESC_Business Lite Uncapped Fibre Elite Plus
+OFFER_DESC_Business Uncapped Advanced Plus
+OFFER_DESC_Call Diversion Service
+OFFER_DESC_Calypso 3 + 8 Promotion Rental
+OFFER_DESC_Calypso 3 + 8 Rental
+OFFER_DESC_Completely Unlimited
+OFFER_DESC_Completely Unlimited Deal
+OFFER_DESC_Completely Unlimited Deal 30
+OFFER_DESC_Completely Unlimited Deal TBC1510005
+OFFER_DESC_Completely Unlimited Deal TMC1509043
+OFFER_DESC_Completely Unlimited Deal TMC1509060
+OFFER_DESC_Completely Unlimited Deal TMC1509062
+OFFER_DESC_Completely Unlimited Deal TMC1509071
+OFFER_DESC_Completely Unlimited SIM only
+OFFER_DESC_Connected Office Advanced
+OFFER_DESC_Connected Office Premium Plus
+OFFER_DESC_Connected Office Starter
+OFFER_DESC_Consumer Add-on SmartBroadband Wireless 10GB R299
+OFFER_DESC_Consumer Add-on SmartBroadband Wireless 20GB R399
+OFFER_DESC_Consumer Add-on SmartBroadband Wireless 30GB R499
+OFFER_DESC_Consumer Add-on SmartBroadband Wireless 50GB R699
+OFFER_DESC_Consumer Add-on SmartBroadband Wireless 5GB R199
+OFFER_DESC_Consumer Add-on SmartPlan 100 R399 500MB
+OFFER_DESC_Consumer Add-on SmartPlan 50 R239 500MB
+OFFER_DESC_Consumer Killer deal
+OFFER_DESC_Consumer Telkom Mix Completely Unlimited 1GB
+OFFER_DESC_Consumer Telkom Mix Smart Saver 100 1GB with Closer
+OFFER_DESC_Consumer Telkom Mix SmartPlan 100 1GB with Closer
+OFFER_DESC_Consumer Telkom Mix SmartPlan 50 500MB
+OFFER_DESC_Contract 1
+OFFER_DESC_Contract 1 Deal
+OFFER_DESC_Contract 2
+OFFER_DESC_Contract 2 Deal
+OFFER_DESC_Contract 3
+OFFER_DESC_Contract 3 Deal
+OFFER_DESC_Contract 3 Plus
+OFFER_DESC_Contract 3 S
+OFFER_DESC_Contract 4
+OFFER_DESC_Contract Basic S
+OFFER_DESC_Contract Basic S Deal
+OFFER_DESC_Convergence Single Rate 250
+OFFER_DESC_Convergence Single Rate 400
+OFFER_DESC_CyberTrade Exchange
+OFFER_DESC_Cybertrade CSS
+OFFER_DESC_DSL 10Mbps_Promo
+OFFER_DESC_DSL 10Mbps_Promo (24 Month)
+OFFER_DESC_DSL 4Mbps Promo (24 month)
+OFFER_DESC_DSL 4Mbps Promo (month-to-month)
+OFFER_DESC_DSL 4Mbps Uncapped_Promo
+OFFER_DESC_Data MultiSIM
+OFFER_DESC_Deregulated PABX
+OFFER_DESC_Diginet
+OFFER_DESC_Diginet Wholesale
+OFFER_DESC_Do Advanced
+OFFER_DESC_Do Advanced Plus
+OFFER_DESC_Do Basic
+OFFER_DESC_Do Bundle Basic
+OFFER_DESC_Do Capped Advanced Bundle
+OFFER_DESC_Do Capped Basic Bundle
+OFFER_DESC_Do Capped Premium Bundle
+OFFER_DESC_Do Capped Premium Plus Bundle
+OFFER_DESC_Do Capped PremiumPlus Bundle
+OFFER_DESC_Do Elite
+OFFER_DESC_Do Elite Plus
+OFFER_DESC_Do Elite Uncapped
+OFFER_DESC_Do Level 2 Fast Business Bundle
+OFFER_DESC_Do Level 2 Fast Home Bundle
+OFFER_DESC_Do Lite
+OFFER_DESC_Do Premium
+OFFER_DESC_Do Premium Plus
+OFFER_DESC_Do Promo 1
+OFFER_DESC_Do Promo 2
+OFFER_DESC_Do Uncapped Advanced Bundle
+OFFER_DESC_Do Uncapped Basic Bundle
+OFFER_DESC_Do Uncapped Premium Bundle
+OFFER_DESC_Do Uncapped Premium Plus Bundle
+OFFER_DESC_Do Uncapped PremiumPlus Bundle
+OFFER_DESC_DualMail Retail
+OFFER_DESC_Enterprise Internet
+OFFER_DESC_Event Billing
+OFFER_DESC_FLLA  Hunting
+OFFER_DESC_FLLA Junction - Business
+OFFER_DESC_FLLA Junction - Residential
+OFFER_DESC_FLLA Junction Bundle
+OFFER_DESC_FMC Internet
+OFFER_DESC_FMC LTE
+OFFER_DESC_FMC Saver
+OFFER_DESC_FMC Smart Contract
+OFFER_DESC_FMC SmartInternet
+OFFER_DESC_FMC SmartOneRate
+OFFER_DESC_FMC SmartPhone
+OFFER_DESC_FMC SmartPlan
+OFFER_DESC_FMC SmartPlan without WI-FI 10Gb
+OFFER_DESC_FMC SmartSaver
+OFFER_DESC_FMC SmatInternet Saver
+OFFER_DESC_FastNet Back - Up
+OFFER_DESC_FastNet Backup for Managed DSL
+OFFER_DESC_FastNet VPN with Router SLA
+OFFER_DESC_Fastnet VPN Solution
+OFFER_DESC_FastnetVPN Solution
+OFFER_DESC_Fibre (100Mbps) (200GB) plus Voice
+OFFER_DESC_Fibre (100Mbps) (400GB)
+OFFER_DESC_Fibre (100Mbps) (400GB) (24 Months)
+OFFER_DESC_Fibre (100Mbps) (400GB) plus Voice
+OFFER_DESC_Fibre (100Mbps) (Uncapped) (24 Months)
+OFFER_DESC_Fibre (10Mbps) (100GB)
+OFFER_DESC_Fibre (10Mbps) (100GB) (24 Months)
+OFFER_DESC_Fibre (10Mbps) (100GB) plus Voice
+OFFER_DESC_Fibre (10Mbps) (20GB)
+OFFER_DESC_Fibre (10Mbps) (20GB) (24 Months)
+OFFER_DESC_Fibre (10Mbps) (40GB) (24 Months)
+OFFER_DESC_Fibre (10Mbps) (50GB) plus Voice
+OFFER_DESC_Fibre (10Mbps) (Uncapped) (24 Months)
+OFFER_DESC_Fibre (200Mbps) (600GB)
+OFFER_DESC_Fibre (200Mbps) (600GB) 24 Month
+OFFER_DESC_Fibre (20Mbps) (100GB)
+OFFER_DESC_Fibre (20Mbps) (100GB) (24 Months)
+OFFER_DESC_Fibre (20Mbps) (100GB) (Month to Month)
+OFFER_DESC_Fibre (20Mbps) (100GB) plus Voice
+OFFER_DESC_Fibre (20Mbps) (50GB) plus Voice
+OFFER_DESC_Fibre (2Mbps) (20GB)
+OFFER_DESC_Fibre (2Mbps) (20GB) (24 Months)
+OFFER_DESC_Fibre (2Mbps) (20GB) plus Voice
+OFFER_DESC_Fibre (40Mbps) (100GB) plus Voice
+OFFER_DESC_Fibre (40Mbps) (200GB)
+OFFER_DESC_Fibre (40Mbps) (200GB) (24 Months)
+OFFER_DESC_Fibre (40Mbps) (200GB) plus Voice
+OFFER_DESC_Fibre (4Mbps) (20GB)
+OFFER_DESC_Fibre (4Mbps) (20GB) (24 Months)
+OFFER_DESC_Fibre (4Mbps) (20GB) plus Voice
+OFFER_DESC_Fibre (4Mbps) (40GB)
+OFFER_DESC_Fibre (4Mbps) (40GB) (24 Months)
+OFFER_DESC_Fibre (4Mbps) (40GB) plus Voice
+OFFER_DESC_Fibre (4Mbps) (Uncapped) (24 Months)
+OFFER_DESC_Fibre (4Mbps) (uncapped)
+OFFER_DESC_Fibre 10Mbps (100GB)
+OFFER_DESC_Fibre 10Mbps_Promo (24 Month)
+OFFER_DESC_Fibre 4Mbps Promo (24 month)
+OFFER_DESC_Fibre 4Mbps Uncapped_Promo
+OFFER_DESC_Fibre Voice (no calling plan)
+OFFER_DESC_Fixed Line Look-Alike - Business
+OFFER_DESC_Fixed Line Look-Alike - Pensioners
+OFFER_DESC_Fixed Line Look-Alike - Residential
+OFFER_DESC_Fixed Line Look-Alike - over 70
+OFFER_DESC_Fixed Line Look-Alike Bundle
+OFFER_DESC_Fixed Line Look-Alike Bundle - Business
+OFFER_DESC_Fixed Line Look-Alike Bundle - Pensioners
+OFFER_DESC_Fixed Line Look-Alike Bundle - Residential
+OFFER_DESC_Fixed Line Look-Alike Bundle - over 70
+OFFER_DESC_Fixed Voice BB and Internet Service
+OFFER_DESC_Fixed Voice Service
+OFFER_DESC_Fixed Wireless Broadband - Business
+OFFER_DESC_Fixed Wireless Broadband - Residential
+OFFER_DESC_Fixed Wireless Broadband Bundle  - Pensioners
+OFFER_DESC_Fixed Wireless Broadband Bundle - Business
+OFFER_DESC_Fixed Wireless Broadband Bundle - Residential
+OFFER_DESC_Fixed Wireless Broadband Bundle - over 70
+OFFER_DESC_Fixed Wireless Broadband Service
+OFFER_DESC_Foreign VPN
+OFFER_DESC_FrameExpress - Conversion (No CIR)
+OFFER_DESC_FrameExpress - Diginet (Access)
+OFFER_DESC_Free Me Family Plan Sim Only ? Consumer
+OFFER_DESC_Free Me Sim Only - Business
+OFFER_DESC_Free Me Sim Only - Consumer
+OFFER_DESC_Free Me TopUp Sim Only - Business
+OFFER_DESC_Free Me TopUp Sim Only - Consumer
+OFFER_DESC_FreeMe 10GB
+OFFER_DESC_FreeMe 10GB Deal
+OFFER_DESC_FreeMe 10GB TopUp
+OFFER_DESC_FreeMe 10GB TopUp Deal
+OFFER_DESC_FreeMe 1GB
+OFFER_DESC_FreeMe 1GB Deal
+OFFER_DESC_FreeMe 1GB TVC1607040
+OFFER_DESC_FreeMe 1GB TVC1610172
+OFFER_DESC_FreeMe 1GB TVC1701015
+OFFER_DESC_FreeMe 1GB TVC1701053
+OFFER_DESC_FreeMe 1GB TVC1704081
+OFFER_DESC_FreeMe 1GB TVC1704093
+OFFER_DESC_FreeMe 1GB TVC1704107
+OFFER_DESC_FreeMe 1GB TVC1705001
+OFFER_DESC_FreeMe 1GB TVC1705013
+OFFER_DESC_FreeMe 1GB TVC1705031
+OFFER_DESC_FreeMe 1GB TVC1804260
+OFFER_DESC_FreeMe 1GB TopUp
+OFFER_DESC_FreeMe 1GB TopUp CVT1704003
+OFFER_DESC_FreeMe 1GB TopUp CVT1704005
+OFFER_DESC_FreeMe 1GB TopUp Deal
+OFFER_DESC_FreeMe 1GB TopUp TVT1701002
+OFFER_DESC_FreeMe 1GB TopUp TVT1706351
+OFFER_DESC_FreeMe 1GB TopUp TVT1706355
+OFFER_DESC_FreeMe 20G  TVC1804603
+OFFER_DESC_FreeMe 20GB
+OFFER_DESC_FreeMe 20GB  TVC1704057
+OFFER_DESC_FreeMe 20GB  TVC1704075
+OFFER_DESC_FreeMe 20GB Deal
+OFFER_DESC_FreeMe 20GB Staff
+OFFER_DESC_FreeMe 20GB Staff Deal
+OFFER_DESC_FreeMe 20GB TVC1611388
+OFFER_DESC_FreeMe 20GB TVC1705009
+OFFER_DESC_FreeMe 2G TVC1804010
+OFFER_DESC_FreeMe 2GB
+OFFER_DESC_FreeMe 2GB Deal
+OFFER_DESC_FreeMe 2GB Staff
+OFFER_DESC_FreeMe 2GB Staff Deal
+OFFER_DESC_FreeMe 2GB TVC1610177
+OFFER_DESC_FreeMe 2GB TVC1701005
+OFFER_DESC_FreeMe 2GB TVC1701017
+OFFER_DESC_FreeMe 2GB TVC1704048
+OFFER_DESC_FreeMe 2GB TVC1704066
+OFFER_DESC_FreeMe 2GB TVC1704121
+OFFER_DESC_FreeMe 2GB TVC1710011
+OFFER_DESC_FreeMe 2GB TVC1710104
+OFFER_DESC_FreeMe 2GB TVC1710119
+OFFER_DESC_FreeMe 2GB TVC1804105
+OFFER_DESC_FreeMe 2GB TVC1804119
+OFFER_DESC_FreeMe 2GB TVC1804149
+OFFER_DESC_FreeMe 2GB TopUp
+OFFER_DESC_FreeMe 2GB TopUp Deal
+OFFER_DESC_FreeMe 500MB
+OFFER_DESC_FreeMe 500MB Deal
+OFFER_DESC_FreeMe 500MB TopUp
+OFFER_DESC_FreeMe 500MB TopUp Deal
+OFFER_DESC_FreeMe 5GB
+OFFER_DESC_FreeMe 5GB Deal
+OFFER_DESC_FreeMe 5GB Staff
+OFFER_DESC_FreeMe 5GB Staff Deal
+OFFER_DESC_FreeMe 5GB TVC1704051
+OFFER_DESC_FreeMe 5GB TVC1705839
+OFFER_DESC_FreeMe 5GB TopUp
+OFFER_DESC_FreeMe 5GB TopUp Deal
+OFFER_DESC_FreeMe Family 30GB
+OFFER_DESC_FreeMe Family 30GB Deal
+OFFER_DESC_FreeMe Family 50GB
+OFFER_DESC_FreeMe Family 50GB Deal
+OFFER_DESC_FreeMe Family Unlimited
+OFFER_DESC_FreeMe Family Unlimited Deal
+OFFER_DESC_FreeMe Multi SIM
+OFFER_DESC_FreeMe Multi SIM (3 SIMs are free, thereafter R9 per SIM)
+OFFER_DESC_FreeMe Unlimited
+OFFER_DESC_FreeMe Unlimited Deal
+OFFER_DESC_FreeMe Unlimited Staff
+OFFER_DESC_FreeMe Unlimited Staff Deal
+OFFER_DESC_FreeMe Unlimited TVC1611402
+OFFER_DESC_FreeMe Unlimited TVC1704024
+OFFER_DESC_FreeMe Unlimited TVC1704060
+OFFER_DESC_FreeMe Unlimited TVC1704078
+OFFER_DESC_FreeMe Unlimited TVC1705937
+OFFER_DESC_FreeMe Unlimited TVC1710068
+OFFER_DESC_FreeMe Unlimited TVC1711133
+OFFER_DESC_FreeMe Unlimited TVC1711134
+OFFER_DESC_FreeMe Unlimited TVC1804205
+OFFER_DESC_FreeMe Unlimited TVC1804269
+OFFER_DESC_FreeMe Unlimited TVC1804593
+OFFER_DESC_FreeMe Unlimited TVC1805654
+OFFER_DESC_GC Broadband (100Mbps + 200GB)
+OFFER_DESC_GC Broadband (100Mbps Uncapped)
+OFFER_DESC_GC Broadband (10Mbps + 100GB)
+OFFER_DESC_GC Broadband (10Mbps Uncapped Promo) 24 Month
+OFFER_DESC_GC Broadband (20Mbps + 100GB)
+OFFER_DESC_GC Broadband (2Mbps + 20GB)
+OFFER_DESC_GC Broadband (40Mbps + 200GB)
+OFFER_DESC_GC Broadband (4Mbps + 40GB)
+OFFER_DESC_GC Broadband (4Mbps Uncapped)
+OFFER_DESC_GC Broadband (4Mbps Uncapped) 24 Month
+OFFER_DESC_GC Unlimited Broadband 100Mbps
+OFFER_DESC_GC Unlimited Broadband 10Mbps
+OFFER_DESC_GC Unlimited Broadband 20Mbps
+OFFER_DESC_Gated Resident HOA Voice
+OFFER_DESC_Global Internetwork Access
+OFFER_DESC_Global VPN
+OFFER_DESC_Home DSL Fast Supreme Package
+OFFER_DESC_Home DSL Over 70 years Bundle
+OFFER_DESC_Home DSL Pensioners Bundle
+OFFER_DESC_Home ECDSL
+OFFER_DESC_Home ECDSL Bundle
+OFFER_DESC_Home Fibre 100Mbps (400GB)
+OFFER_DESC_Home Fibre 40Mbps (200GB)
+OFFER_DESC_Home Office LTE 10 GB Deal
+OFFER_DESC_Home Office LTE 100 GB Deal
+OFFER_DESC_Home Office LTE 20 GB
+OFFER_DESC_Home Office LTE 20 GB Deal
+OFFER_DESC_Home Office LTE 50 GB
+OFFER_DESC_Home Office LTE 50 GB Deal
+OFFER_DESC_Hosted Business Telephony
+OFFER_DESC_Hosting Internet Access Pro
+OFFER_DESC_IP Network Access
+OFFER_DESC_IP Network Access (Conversion)
+OFFER_DESC_IP Network Access Via Metro Ethernet
+OFFER_DESC_IP Network Access via DSL
+OFFER_DESC_IP Network Access via DSL (Conversion)
+OFFER_DESC_IP Network Access via DSL Actively Managed
+OFFER_DESC_IPECS UCP 100 Rental
+OFFER_DESC_IPECS UCP 600 Rental
+OFFER_DESC_ISDN 2 Business 12 Month Term
+OFFER_DESC_ISDN 2 Range
+OFFER_DESC_ISDN 2/2A Service
+OFFER_DESC_ISDN 2A Business
+OFFER_DESC_ISDN PRA Service - Bundle
+OFFER_DESC_Information Security Services CSS
+OFFER_DESC_Internet 0
+OFFER_DESC_Internet 0 Deal
+OFFER_DESC_Internet 1
+OFFER_DESC_Internet 1 Deal
+OFFER_DESC_Internet 2
+OFFER_DESC_Internet 2 Deal
+OFFER_DESC_Internet 3
+OFFER_DESC_Internet 3 Deal
+OFFER_DESC_Internet 4
+OFFER_DESC_Internet 4 Deal
+OFFER_DESC_Internet 5 Promo
+OFFER_DESC_Internet 5 Promo Deal
+OFFER_DESC_Internet Saver 1
+OFFER_DESC_Internet Saver 1 Deal
+OFFER_DESC_Internet Saver 3
+OFFER_DESC_Internet Saver 3 Deal
+OFFER_DESC_Internodal Links
+OFFER_DESC_LAN Connect Broadband
+OFFER_DESC_LAN Connect CSS
+OFFER_DESC_M2M Basic
+OFFER_DESC_M2M Enhanced
+OFFER_DESC_Megaline
+OFFER_DESC_Megaline Plus
+OFFER_DESC_Megaline Plus (NC)
+OFFER_DESC_Megaline Wholesale (FNPLC)
+OFFER_DESC_Metro Fibre Access
+OFFER_DESC_Metro Port & NTU Config
+OFFER_DESC_Metro Port & T5C Config
+OFFER_DESC_MetroLAN
+OFFER_DESC_MetroLAN National Inter Metro
+OFFER_DESC_MetroLink
+OFFER_DESC_Mobile - Contract_Business
+OFFER_DESC_Mobile - Internet Business
+OFFER_DESC_Mobile - Internet Consumer
+OFFER_DESC_Mobile - Saver Consumer
+OFFER_DESC_Mobile Add-on:  Samsung Galaxy S6 (32 GB)
+OFFER_DESC_Mobile Add-on: Huawei P8 Lite with SP50
+OFFER_DESC_Mobile Add-on: Samsung Note 5 with SP100
+OFFER_DESC_Multi SIM
+OFFER_DESC_Open Access Third Party Capped
+OFFER_DESC_Open Access Third Party Uncapped
+OFFER_DESC_OptiCon 16 Rental
+OFFER_DESC_OptiCon 24 Rental
+OFFER_DESC_OptiCon 300 Rental
+OFFER_DESC_OptiCon 5 Rental
+OFFER_DESC_OptiCon 600 Rental
+OFFER_DESC_OptiCon IP32 Office Solution
+OFFER_DESC_OptiCon IP32 Rental
+OFFER_DESC_OptiCon IPECS 100 HQ Rental
+OFFER_DESC_OptiCon IPECS 100 Rental
+OFFER_DESC_OptiCon IPECS 1200 Rental
+OFFER_DESC_OptiCon IPECS 300 HQ Rental
+OFFER_DESC_OptiCon IPECS 300 Rental
+OFFER_DESC_OptiCon IPECS 50 Rental
+OFFER_DESC_OptiCon IPECS 600 Rental
+OFFER_DESC_OptiCon IPECS UCP 100 Rental
+OFFER_DESC_OptiCon IPECS UCP 600 Rental
+OFFER_DESC_OptiCon Micro Rental
+OFFER_DESC_OptiCon Rental
+OFFER_DESC_OptiCon eMG Rental
+OFFER_DESC_Opticon Micro Rental
+OFFER_DESC_Opticon Rental
+OFFER_DESC_Opticon Smart Business Gateway Rental
+OFFER_DESC_PSTN - SpaceStream1
+OFFER_DESC_PSTN - SpaceStream1 Business
+OFFER_DESC_PSTN - SpaceStream1 Residential
+OFFER_DESC_PSTN - SpaceStream2 Business
+OFFER_DESC_PSTN - SpaceStream2 Residential
+OFFER_DESC_PSTN Junction Lines - Business
+OFFER_DESC_PSTN Junction Lines - Business 12 Month Term
+OFFER_DESC_PSTN Network Access - Business
+OFFER_DESC_PSTN Network Access - Business 12 Month Term
+OFFER_DESC_PSTN Network Access - Over 70 years
+OFFER_DESC_PSTN Network Access - Pensioners
+OFFER_DESC_PSTN Network Access - Residential
+OFFER_DESC_Pre-paid FLLA Waya-Waya
+OFFER_DESC_Premium SMS
+OFFER_DESC_Prepaid PSB Data Promo
+OFFER_DESC_Primary Rate Access (ISDN30)
+OFFER_DESC_Retail Fibre Broadband
+OFFER_DESC_Retail Fibre Broadband - Business
+OFFER_DESC_Retail Fibre Broadband - Consumer
+OFFER_DESC_Retail Fibre Voice - Business
+OFFER_DESC_Reverse Billed URL
+OFFER_DESC_Router
+OFFER_DESC_Router Card and Switches
+OFFER_DESC_SAIX Customer Specific Solution
+OFFER_DESC_SAIX Dedicated Services - Diginet (Access)
+OFFER_DESC_SAIX Via Metro Ethernet
+OFFER_DESC_SIM Sonke
+OFFER_DESC_SIP Range
+OFFER_DESC_SIP Trunk Premium Geo Redundant
+OFFER_DESC_SIP Trunk Premium Non-Geo Redundant
+OFFER_DESC_SIP Trunking MLAC
+OFFER_DESC_SMB FLLA TI Bundle (2Mbps/40GB)
+OFFER_DESC_SMB FLLA TI Bundle (4Mbps/100GB)
+OFFER_DESC_SMB SBG Wired PBX - Rental
+OFFER_DESC_SMB SBG Wireless PBX - Rental
+OFFER_DESC_SMBS SBG Wired Box
+OFFER_DESC_SMBS SBG Wireless Box
+OFFER_DESC_Saver 1
+OFFER_DESC_Saver 1 Deal
+OFFER_DESC_Saver 2
+OFFER_DESC_Saver 2 Deal
+OFFER_DESC_Saver 3
+OFFER_DESC_Saver 3 Deal
+OFFER_DESC_Saver 4
+OFFER_DESC_Saver 5
+OFFER_DESC_Saver 6 Deal
+OFFER_DESC_Shared Access to Hosting
+OFFER_DESC_Shared Access to Hosting ATM
+OFFER_DESC_Shared Access to Hosting Ethernet
+OFFER_DESC_Sim Only 100
+OFFER_DESC_Sim Only Completely Unlimited
+OFFER_DESC_Sim Only Unlimited Voice Lite Business
+OFFER_DESC_Simple Elite
+OFFER_DESC_Simple Plus Contract
+OFFER_DESC_Simple Plus Uncapped
+OFFER_DESC_Simple Uncapped
+OFFER_DESC_Simple Uncapped Contract
+OFFER_DESC_Single Number Service
+OFFER_DESC_Smart BroadBand Wireless Fibre
+OFFER_DESC_Smart Business Add-on Deal 1006
+OFFER_DESC_Smart Business Add-on Deal 14
+OFFER_DESC_Smart Business Add-on Deal 4 (Completely Unlimited)
+OFFER_DESC_Smart Business Add-on Deal 518
+OFFER_DESC_Smart Business Add-on Deal 523
+OFFER_DESC_Smart Business Add-on Deal 525
+OFFER_DESC_Smart Business Add-on Deal 600
+OFFER_DESC_Smart Business Add-on Deal 614
+OFFER_DESC_Smart Business Add-on Deal 712
+OFFER_DESC_Smart Business Add-on Deal 721
+OFFER_DESC_Smart Business Add-on Deal 729
+OFFER_DESC_Smart Business Add-on Deal 735
+OFFER_DESC_Smart Business Add-on Deal 740
+OFFER_DESC_Smart Business Add-on Deal 836
+OFFER_DESC_Smart Business Add-on Deal 877
+OFFER_DESC_Smart Business Add-on Deal 880
+OFFER_DESC_Smart Business Add-on Deal 886
+OFFER_DESC_Smart Business Add-on Deal 938
+OFFER_DESC_Smart Business Add-on Deal 964
+OFFER_DESC_Smart Contract 1
+OFFER_DESC_Smart Contract 1 Deal
+OFFER_DESC_Smart Contract 2
+OFFER_DESC_Smart Contract 2 Deal
+OFFER_DESC_Smart Contract 3 Deal
+OFFER_DESC_Smart Contract 3 S Deal
+OFFER_DESC_Smart Contract 4
+OFFER_DESC_Smart Contract 4 Deal
+OFFER_DESC_Smart Contract 4 S Deal
+OFFER_DESC_Smart Contract 7 S Deal
+OFFER_DESC_Smart Contract Basic S Deal
+OFFER_DESC_Smart Office Business Fibre (100GB) Premium Plus
+OFFER_DESC_Smart Office Business Fibre (600GB) Elite Plus
+OFFER_DESC_Smart Office_Advanced
+OFFER_DESC_Smart Office_Basic
+OFFER_DESC_Smart Office_Essential
+OFFER_DESC_Smart Office_Premium
+OFFER_DESC_Smart One-Rate LCR
+OFFER_DESC_Smart One-Rate LCR Deal
+OFFER_DESC_Smart One-Rate TopUp
+OFFER_DESC_Smart One-Rate TopUp Deal
+OFFER_DESC_Smart One-Rate TopUp Extreme Deal
+OFFER_DESC_Smart OneRate
+OFFER_DESC_Smart OneRate Deal
+OFFER_DESC_Smart OneRate Extreme Deal
+OFFER_DESC_Smart OneRate Tariff Plan for Convergence
+OFFER_DESC_SmartBroadband Uncapped Wireless 1
+OFFER_DESC_SmartBroadband Uncapped Wireless 1 Deal
+OFFER_DESC_SmartBroadband Uncapped Wireless 2
+OFFER_DESC_SmartBroadband Uncapped Wireless 2 Deal
+OFFER_DESC_SmartBroadband Uncapped Wireless 3
+OFFER_DESC_SmartBroadband Uncapped Wireless 3 Deal
+OFFER_DESC_SmartBroadband Wireless 100GB
+OFFER_DESC_SmartBroadband Wireless 100GB Deal
+OFFER_DESC_SmartBroadband Wireless 100GB Deal TML1508005
+OFFER_DESC_SmartBroadband Wireless 100GB Deal TML1508014
+OFFER_DESC_SmartBroadband Wireless 100GB Deal TML1602009
+OFFER_DESC_SmartBroadband Wireless 10GB
+OFFER_DESC_SmartBroadband Wireless 10GB Deal
+OFFER_DESC_SmartBroadband Wireless 10GB Deal TML1508001
+OFFER_DESC_SmartBroadband Wireless 10GB Deal TML1602005
+OFFER_DESC_SmartBroadband Wireless 10GB TML1610100
+OFFER_DESC_SmartBroadband Wireless 20GB
+OFFER_DESC_SmartBroadband Wireless 20GB Deal
+OFFER_DESC_SmartBroadband Wireless 20GB Deal TML1508002
+OFFER_DESC_SmartBroadband Wireless 20GB Deal TML1508011
+OFFER_DESC_SmartBroadband Wireless 20GB Deal TML1602012
+OFFER_DESC_SmartBroadband Wireless 30GB
+OFFER_DESC_SmartBroadband Wireless 30GB Deal
+OFFER_DESC_SmartBroadband Wireless 30GB Deal TML1508003
+OFFER_DESC_SmartBroadband Wireless 50GB
+OFFER_DESC_SmartBroadband Wireless 50GB Deal
+OFFER_DESC_SmartBroadband Wireless 50GB Deal TML1508004
+OFFER_DESC_SmartBroadband Wireless 50GB Deal TML1508013
+OFFER_DESC_SmartBroadband Wireless 5GB
+OFFER_DESC_SmartBroadband Wireless 5GB Deal
+OFFER_DESC_SmartBroadband Wireless 5GB Deal TML1508009
+OFFER_DESC_SmartBroadband Wireless Business (SIM Only)
+OFFER_DESC_SmartBroadband Wireless Business SIM Only Deal
+OFFER_DESC_SmartBroadband Wireless Business-100GB TML1709012
+OFFER_DESC_SmartBroadband Wireless Business-10GB TML1709008
+OFFER_DESC_SmartBroadband Wireless Business-20GB TML1709009
+OFFER_DESC_SmartBroadband Wireless Business-30GB TML1709010
+OFFER_DESC_SmartBroadband Wireless Business-50GB TML1709011
+OFFER_DESC_SmartBroadband Wireless Business-50GB TML1801015
+OFFER_DESC_SmartBroadband Wireless Business-5GB TML1709007
+OFFER_DESC_SmartBroadband Wireless Consumer (SIM Only)
+OFFER_DESC_SmartBroadband Wireless Fibre
+OFFER_DESC_SmartBroadband Wireless Fibre (NTF)
+OFFER_DESC_SmartBroadband Wireless LTE-A 100GB
+OFFER_DESC_SmartBroadband Wireless LTE-A 100GB Deal
+OFFER_DESC_SmartBroadband Wireless LTE-A 100GB Deal TML1508007
+OFFER_DESC_SmartBroadband Wireless LTE-A 200GB
+OFFER_DESC_SmartBroadband Wireless LTE-A 200GB Deal
+OFFER_DESC_SmartBroadband Wireless LTE-A 200GB Deal 58
+OFFER_DESC_SmartBroadband Wireless LTE-A 50GB
+OFFER_DESC_SmartBroadband Wireless LTE-A 50GB Deal
+OFFER_DESC_SmartBroadband Wireless Prepaid
+OFFER_DESC_SmartBroadband Wireless Uncapped All Hours
+OFFER_DESC_SmartBroadband Wireless Uncapped All Hours Deal
+OFFER_DESC_SmartBroadband Wireless Uncapped Business Hours
+OFFER_DESC_SmartBroadband Wireless Uncapped Business Hours Deal
+OFFER_DESC_SmartBroadband Wireless-100GB TML1701006
+OFFER_DESC_SmartBroadband Wireless-100GB TML1708102
+OFFER_DESC_SmartBroadband Wireless-100GB TML1709006
+OFFER_DESC_SmartBroadband Wireless-100GB TML1709012
+OFFER_DESC_SmartBroadband Wireless-100GB TML1804013
+OFFER_DESC_SmartBroadband Wireless-100GB TML1804019
+OFFER_DESC_SmartBroadband Wireless-10GB TML1701002
+OFFER_DESC_SmartBroadband Wireless-10GB TML1709002
+OFFER_DESC_SmartBroadband Wireless-10GB TML1709008
+OFFER_DESC_SmartBroadband Wireless-10GB TML1804009
+OFFER_DESC_SmartBroadband Wireless-10GB TML1804015
+OFFER_DESC_SmartBroadband Wireless-20GB TML1701003
+OFFER_DESC_SmartBroadband Wireless-20GB TML1709003
+OFFER_DESC_SmartBroadband Wireless-20GB TML1709009
+OFFER_DESC_SmartBroadband Wireless-20GB TML1804010
+OFFER_DESC_SmartBroadband Wireless-30GB TML1701004
+OFFER_DESC_SmartBroadband Wireless-30GB TML1709004
+OFFER_DESC_SmartBroadband Wireless-30GB TML1709010
+OFFER_DESC_SmartBroadband Wireless-30GB TML1804011
+OFFER_DESC_SmartBroadband Wireless-30GB TML1804016
+OFFER_DESC_SmartBroadband Wireless-50GB TML1701005
+OFFER_DESC_SmartBroadband Wireless-50GB TML1708101
+OFFER_DESC_SmartBroadband Wireless-50GB TML1709005
+OFFER_DESC_SmartBroadband Wireless-50GB TML1709011
+OFFER_DESC_SmartBroadband Wireless-50GB TML1804012
+OFFER_DESC_SmartBroadband Wireless-50GB TML1804018
+OFFER_DESC_SmartBroadband Wireless-5GB TML1701001
+OFFER_DESC_SmartBroadband Wireless-5GB TML1705001
+OFFER_DESC_SmartBroadband Wireless-5GB TML1709001
+OFFER_DESC_SmartBroadband Wireless-5GB TML1709007
+OFFER_DESC_SmartBroadband Wireless-5GB TML1804008
+OFFER_DESC_SmartHome - Essential (LTE)
+OFFER_DESC_SmartHome Advanced
+OFFER_DESC_SmartHome Advanced (ADSL)
+OFFER_DESC_SmartHome Advanced (ADSL) - Over 70 years
+OFFER_DESC_SmartHome Advanced (LTE)
+OFFER_DESC_SmartHome Advanced Bundle
+OFFER_DESC_SmartHome Basic
+OFFER_DESC_SmartHome Essential
+OFFER_DESC_SmartHome Essential (ADSL)
+OFFER_DESC_SmartHome Essential (LTE)
+OFFER_DESC_SmartHome Essential Bundle
+OFFER_DESC_SmartHome LTE-A
+OFFER_DESC_SmartHome Premium
+OFFER_DESC_SmartHome Premium (ADSL)
+OFFER_DESC_SmartHome Premium (LTE)
+OFFER_DESC_SmartHome Premium Bundle
+OFFER_DESC_SmartHome Supreme
+OFFER_DESC_SmartInternet - 1GB Deal TMI1508064
+OFFER_DESC_SmartInternet - 1GB Deal TMI1601001
+OFFER_DESC_SmartInternet - 1GB Deal TMI1601023
+OFFER_DESC_SmartInternet - 1GB Deal TMI1602201
+OFFER_DESC_SmartInternet - 1GB TMI1604060
+OFFER_DESC_SmartInternet - 1GB TMI1704100
+OFFER_DESC_SmartInternet - 2GB Deal TMI1508045
+OFFER_DESC_SmartInternet - 2GB Deal TMI1604005
+OFFER_DESC_SmartInternet - 2GB TMI1804024
+OFFER_DESC_SmartInternet - 500MB Deal TMI1508071
+OFFER_DESC_SmartInternet - 500MB Deal TMI1601011
+OFFER_DESC_SmartInternet - 5GB Deal TMI1508058
+OFFER_DESC_SmartInternet - 5GB Deal TMI1508082
+OFFER_DESC_SmartInternet - 5GB TMI1706001
+OFFER_DESC_SmartInternet 1.5GB Promo
+OFFER_DESC_SmartInternet 1.5GB Promo Deal
+OFFER_DESC_SmartInternet 15GB Promo
+OFFER_DESC_SmartInternet 15GB Promo Deal
+OFFER_DESC_SmartInternet 1GB
+OFFER_DESC_SmartInternet 1GB Deal
+OFFER_DESC_SmartInternet 2.5GB
+OFFER_DESC_SmartInternet 2.5GB Deal
+OFFER_DESC_SmartInternet 250MB
+OFFER_DESC_SmartInternet 250MB Deal
+OFFER_DESC_SmartInternet 3GB Promo
+OFFER_DESC_SmartInternet 3GB Promo Deal
+OFFER_DESC_SmartInternet 500MB
+OFFER_DESC_SmartInternet 500MB Deal
+OFFER_DESC_SmartInternet 5GB
+OFFER_DESC_SmartInternet 5GB Deal
+OFFER_DESC_SmartInternet 5GB TMI1701006
+OFFER_DESC_SmartInternet 7.5GB Promo
+OFFER_DESC_SmartInternet 7.5GB Promo Deal
+OFFER_DESC_SmartInternet 750MB Promo
+OFFER_DESC_SmartInternet 750MB Promo Deal
+OFFER_DESC_SmartInternet Consumer SIM Only Deal
+OFFER_DESC_SmartInternet Saver 1.5GB Promo
+OFFER_DESC_SmartInternet Saver 1.5GB Promo Deal
+OFFER_DESC_SmartInternet Saver 15GB Promo Deal
+OFFER_DESC_SmartInternet Saver 1GB Deal
+OFFER_DESC_SmartInternet Saver 2.5GB Deal
+OFFER_DESC_SmartInternet Saver 250MB
+OFFER_DESC_SmartInternet Saver 3GB Promo
+OFFER_DESC_SmartInternet Saver 3GB Promo Deal
+OFFER_DESC_SmartInternet Saver 500MB
+OFFER_DESC_SmartInternet Saver 500MB Deal
+OFFER_DESC_SmartInternet Saver 5GB Deal
+OFFER_DESC_SmartInternet Saver 7.5GB Promo
+OFFER_DESC_SmartInternet Saver 7.5GB Promo Deal
+OFFER_DESC_SmartInternet Saver 750MB Promo
+OFFER_DESC_SmartInternet Saver 750MB Promo Deal
+OFFER_DESC_SmartInternet Top-Up 10GB
+OFFER_DESC_SmartInternet Top-Up 10GB Deal
+OFFER_DESC_SmartInternet Top-Up 1GB
+OFFER_DESC_SmartInternet Top-Up 1GB Deal
+OFFER_DESC_SmartInternet Top-Up 20GB
+OFFER_DESC_SmartInternet Top-Up 20GB Deal
+OFFER_DESC_SmartInternet Top-Up 2GB
+OFFER_DESC_SmartInternet Top-Up 2GB Deal
+OFFER_DESC_SmartInternet Top-Up 2GB Deal TMI1509219
+OFFER_DESC_SmartInternet Top-Up 500MB
+OFFER_DESC_SmartInternet Top-Up 500MB Deal
+OFFER_DESC_SmartInternet Top-Up 50GB Deal
+OFFER_DESC_SmartInternet Top-Up 5GB
+OFFER_DESC_SmartInternet Top-Up 5GB Deal
+OFFER_DESC_SmartInternet Unlimited Deal
+OFFER_DESC_SmartInternet Unlimited Sim Only
+OFFER_DESC_SmartInternet Unlimited TMI1510304
+OFFER_DESC_SmartInternet-100GB Deal
+OFFER_DESC_SmartInternet-10GB
+OFFER_DESC_SmartInternet-10GB Deal
+OFFER_DESC_SmartInternet-1GB
+OFFER_DESC_SmartInternet-1GB Deal
+OFFER_DESC_SmartInternet-20GB
+OFFER_DESC_SmartInternet-20GB Deal
+OFFER_DESC_SmartInternet-2GB
+OFFER_DESC_SmartInternet-2GB Deal
+OFFER_DESC_SmartInternet-500MB
+OFFER_DESC_SmartInternet-500MB Deal
+OFFER_DESC_SmartInternet-50GB Deal
+OFFER_DESC_SmartInternet-5GB
+OFFER_DESC_SmartInternet-5GB Deal
+OFFER_DESC_SmartPhone Advanced BYPA610057
+OFFER_DESC_SmartPhone Advanced Deal 9
+OFFER_DESC_SmartPhone Basic Deal BYPB604005
+OFFER_DESC_SmartPhone Basic Deal BYPB604014
+OFFER_DESC_SmartPhone Basic Sim Only
+OFFER_DESC_SmartPhone Deal
+OFFER_DESC_SmartPhone Essential BYPE610064
+OFFER_DESC_SmartPhone Essential Deal 42
+OFFER_DESC_SmartPhone Essential Deal BYPB511002
+OFFER_DESC_SmartPhone Essential Deal BYPE601003
+OFFER_DESC_SmartPlan
+OFFER_DESC_SmartPlan 100
+OFFER_DESC_SmartPlan 100 Deal
+OFFER_DESC_SmartPlan 100 Deal TMC1509231
+OFFER_DESC_SmartPlan 100 Deal TMC1509243
+OFFER_DESC_SmartPlan 100 TMC1611392
+OFFER_DESC_SmartPlan 150
+OFFER_DESC_SmartPlan 150 Deal
+OFFER_DESC_SmartPlan 250
+OFFER_DESC_SmartPlan 250 Deal
+OFFER_DESC_SmartPlan 375
+OFFER_DESC_SmartPlan 375 Deal
+OFFER_DESC_SmartPlan 50
+OFFER_DESC_SmartPlan 50 Deal
+OFFER_DESC_SmartPlan 500
+OFFER_DESC_SmartPlan 500 Deal
+OFFER_DESC_SmartSaver 100
+OFFER_DESC_SmartSaver 100 Deal
+OFFER_DESC_SmartSaver 150
+OFFER_DESC_SmartSaver 150 Deal
+OFFER_DESC_SmartSaver 250 Deal
+OFFER_DESC_SmartSaver 375 Deal
+OFFER_DESC_SmartSaver 50
+OFFER_DESC_SmartSaver 50 Deal
+OFFER_DESC_SmartSaver 500 Deal
+OFFER_DESC_SmartShare Internet 1.2GB
+OFFER_DESC_SmartShare Internet 1.7GB
+OFFER_DESC_SmartShare Internet 2.5GB Promo
+OFFER_DESC_SmartShare Internet 4GB Promo
+OFFER_DESC_SmartShare Internet 6GB Promo
+OFFER_DESC_SmartShare Internet 750MB
+OFFER_DESC_SmartVoice 100
+OFFER_DESC_SmartVoice 100 - Bundle
+OFFER_DESC_SmartVoice 300
+OFFER_DESC_SmartVoice 300 - Bundle
+OFFER_DESC_SmartVoice Basic
+OFFER_DESC_SmartVoice Unlimited
+OFFER_DESC_SpaceStream Home - Business
+OFFER_DESC_SpaceStream Home - Residential
+OFFER_DESC_SpaceStream Office - Business
+OFFER_DESC_SpaceStream Office - Business Installation Included
+OFFER_DESC_Spacestream Express
+OFFER_DESC_Spacestream Express (Data)
+OFFER_DESC_Spacestream Site Service Charge
+OFFER_DESC_Staff ECDSL Bundle
+OFFER_DESC_Standard SIP Trunking
+OFFER_DESC_TB Launch Deal 7
+OFFER_DESC_TBiz BB Capped Advanced
+OFFER_DESC_TBiz BB Capped Basic
+OFFER_DESC_TBiz BB Capped Entry
+OFFER_DESC_TBiz Business Uncapped Advance
+OFFER_DESC_TBiz Business Uncapped Basic
+OFFER_DESC_TBiz Business Uncapped Elite
+OFFER_DESC_TBiz Capped Premium
+OFFER_DESC_TBiz Capped Premium Plus
+OFFER_DESC_TBiz Starter
+OFFER_DESC_TBiz Starter NP
+OFFER_DESC_TDS Campaign
+OFFER_DESC_TDS Campaign - FLLA Over 70
+OFFER_DESC_TDS Campaign - FLLA Pensioner
+OFFER_DESC_TDS Campaign - FLLA Residential
+OFFER_DESC_TDS Campaign FLLA
+OFFER_DESC_TELKOM MIX Samsung Galaxy S4 Mini
+OFFER_DESC_TELKOM MIX Samsung Galaxy S5
+OFFER_DESC_TELKOM MIX Smart Plan 100 1GB Data
+OFFER_DESC_TELKOM MIX Smart Plan 100 CL2
+OFFER_DESC_TELKOM MIX Smart Plan 100 CL3
+OFFER_DESC_TELKOM MIX Smart Plan 50 CL2
+OFFER_DESC_TI DIS CSS Broadband via Metro Ethernet
+OFFER_DESC_TI DIS CSS Subrate
+OFFER_DESC_TI DIS Diginet Access
+OFFER_DESC_TI DIS via Metro Ethernet
+OFFER_DESC_TI Mobile Data SIM
+OFFER_DESC_TI Mobile Service
+OFFER_DESC_TI-AllAccess Capped
+OFFER_DESC_Telkom BizTalk 12 Month Term ECDSL
+OFFER_DESC_Telkom BizTalk 12 Month Term ECDSL Bundle
+OFFER_DESC_Telkom BizTalk 12 Month Term ISDN 2A Business
+OFFER_DESC_Telkom BizTalk 12 Month Term PSTN
+OFFER_DESC_Telkom BizTalk FLLA
+OFFER_DESC_Telkom BizTalk FLLA Bundle
+OFFER_DESC_Telkom Business Fax
+OFFER_DESC_Telkom Business OfficeLink 10
+OFFER_DESC_Telkom Data On the Go 10GB
+OFFER_DESC_Telkom Data On the Go 10GB Deal
+OFFER_DESC_Telkom Data On the Go 10GB Top-up
+OFFER_DESC_Telkom Data On the Go 10GB Top-up Deal
+OFFER_DESC_Telkom Data On the Go 5GB
+OFFER_DESC_Telkom Data On the Go 5GB Deal
+OFFER_DESC_Telkom Data On the Go 5GB Top-up
+OFFER_DESC_Telkom Data On the Go 5GB Top-up Deal
+OFFER_DESC_Telkom Internet via SSE
+OFFER_DESC_Telkom Mix SP100 Sony M4 Aqua (with AXT)
+OFFER_DESC_Telkom Mix Saver 2
+OFFER_DESC_Telkom Mix Smart Contract 1
+OFFER_DESC_Telkom Mix SmartSaver 50
+OFFER_DESC_Telkom Mix Unlimited Lite with Samsung S6 EDGE (32GB)
+OFFER_DESC_Telkom Mix iPhone
+OFFER_DESC_Telkom Mix iPhone 5S 16GB
+OFFER_DESC_Telkom Mobility
+OFFER_DESC_Telkom Simple
+OFFER_DESC_Telkom Simple Consumer
+OFFER_DESC_USSD
+OFFER_DESC_Unlimited Business DSL (10 Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (10 Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (10Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (10Mbps) 24 Months (NTF)
+OFFER_DESC_Unlimited Business DSL (10Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (20 Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (20 Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (20Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (20Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (4 Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (4 Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (40 Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (40 Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (40Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (40Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (4Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (4Mbps) 24 Months (NTF)
+OFFER_DESC_Unlimited Business DSL (4Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (8 Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (8 Mbps) M2M
+OFFER_DESC_Unlimited Business DSL (8Mbps) 24 Months
+OFFER_DESC_Unlimited Business DSL (8Mbps) M2M
+OFFER_DESC_Unlimited Business Fibre (10 Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (10 Mbps) M2M
+OFFER_DESC_Unlimited Business Fibre (100 Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (100Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (10Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (10Mbps) 24 Months (NTF)
+OFFER_DESC_Unlimited Business Fibre (10Mbps) M2M
+OFFER_DESC_Unlimited Business Fibre (20 Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (20Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (40 Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (40 Mbps) M2M
+OFFER_DESC_Unlimited Business Fibre (40Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (4Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre (8Mbps) 24 Months
+OFFER_DESC_Unlimited Business Fibre 10Mbps Promo (24 Months)
+OFFER_DESC_Unlimited Business Lite Fibre 100Mbps (24 Months)
+OFFER_DESC_Unlimited Business Lite Fibre 10Mbps (24 Months)
+OFFER_DESC_Unlimited Business Lite Fibre 10Mbps (M2M)
+OFFER_DESC_Unlimited Business Lite Fibre 20Mbps (24 Months)
+OFFER_DESC_Unlimited Business Lite Fibre 40Mbps (24 Months)
+OFFER_DESC_Unlimited Home DSL 10Mbps
+OFFER_DESC_Unlimited Home DSL 10Mbps (24 Month)
+OFFER_DESC_Unlimited Home DSL 10Mbps (Month to Month)
+OFFER_DESC_Unlimited Home DSL 20Mbps
+OFFER_DESC_Unlimited Home DSL 20Mbps (24 Month)
+OFFER_DESC_Unlimited Home DSL 20Mbps (month to month)
+OFFER_DESC_Unlimited Home DSL 40Mbps
+OFFER_DESC_Unlimited Home DSL 40Mbps (24 Month)
+OFFER_DESC_Unlimited Home DSL 40Mbps (month to month)
+OFFER_DESC_Unlimited Home DSL 4Mbps
+OFFER_DESC_Unlimited Home DSL 4Mbps (24 month)
+OFFER_DESC_Unlimited Home DSL 4Mbps (month to month)
+OFFER_DESC_Unlimited Home DSL 8Mbps
+OFFER_DESC_Unlimited Home DSL 8Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre - 10Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre - 4Mbps (24 Months)
+OFFER_DESC_Unlimited Home Fibre - 4Mbps plus Voice
+OFFER_DESC_Unlimited Home Fibre 100Mbps
+OFFER_DESC_Unlimited Home Fibre 100Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre 100Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Fibre 10Mbps
+OFFER_DESC_Unlimited Home Fibre 10Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre 10Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Fibre 10Mbps(4-10)
+OFFER_DESC_Unlimited Home Fibre 200Mbps
+OFFER_DESC_Unlimited Home Fibre 200Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre 20Mbps
+OFFER_DESC_Unlimited Home Fibre 20Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre 20Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Fibre 40Mbps
+OFFER_DESC_Unlimited Home Fibre 40Mbps (24 Month)
+OFFER_DESC_Unlimited Home Fibre 4Mbps
+OFFER_DESC_Unlimited Home Fibre 4Mbps (24 Month)
+OFFER_DESC_Unlimited Home Lite FTTH 100Mbps (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 10Mbps (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 10Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Lite FTTH 10Mbps Limited Edition
+OFFER_DESC_Unlimited Home Lite FTTH 10Mbps limited edition (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 10Mbps limited edition (Month to Month)
+OFFER_DESC_Unlimited Home Lite FTTH 200Mbps (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 20Mbps (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 20Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Lite FTTH 40Mbps (24 Months)
+OFFER_DESC_Unlimited Home Lite FTTH 40Mbps (Month to Month)
+OFFER_DESC_Unlimited Home Lite FTTH Bundles
+OFFER_DESC_Unlimited Home Plus DSL 10Mbps (24 Month)
+OFFER_DESC_Unlimited Lite
+OFFER_DESC_Unlimited Lite Deal
+OFFER_DESC_Unlimited Lite Deal TMC1509265
+OFFER_DESC_Unlimited Voice All-Net
+OFFER_DESC_Unlimited Voice All-Net Deal
+OFFER_DESC_VIPDIAL Primary (Diginet Access)
+OFFER_DESC_VIPDial Secondary Access
+OFFER_DESC_VPN Lite
+OFFER_DESC_VPN Supreme
+OFFER_DESC_VPN Supreme (Conversion)
+OFFER_DESC_VPN Supreme Stand-alone
+OFFER_DESC_VPN Supreme Via Metro Ethernet
+OFFER_DESC_VPN Supreme via FastNet
+OFFER_DESC_Virtual Servers CSS
+OFFER_DESC_VoIP Connect Via Metro Ethernet Access
+OFFER_DESC_WAN Optimisation (Managed)
+OFFER_DESC_Wholesale ECDSL
+OFFER_DESC_World Call Service
+OFFER_DESC_do Advanced
+OFFER_DESC_do Advanced Plus Bundle
+OFFER_DESC_do Basic
+OFFER_DESC_do Uncapped Basic
+SERVICE_TYPE_-
+SERVICE_TYPE_BROADBAND
+SERVICE_TYPE_FIXED
+SERVICE_TYPE_MOBILE
+SERVICE_TYPE_VAS
+SERVICE_TYPE_VOICE

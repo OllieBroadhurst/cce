@@ -12,15 +12,15 @@ import os
 
 import plotly.graph_objects as go
 
-def get_data(row_limit, from_date_customer, from_date_dispute):
+def get_train_data(row_limit, from_date_customer, from_date_dispute):
     if row_limit > 0:
         row_limit = 'limit ' + str(row_limit)
     else:
         row_limit = ''
 
     query = """SELECT DISTINCT
-            ACCOUNT_NO_ANON,
-            COUNT(ACCOUNT_NO_ANON) OVER (PARTITION BY ACCOUNT_NO_ANON, OFFER_DESC) Months_With_Offer,
+            CUSTOMER_NO_ANON,
+            COUNT(CUSTOMER_NO_ANON) OVER (PARTITION BY CUSTOMER_NO_ANON, OFFER_DESC) Months_With_Offer,
             CASE
                 WHEN CUSTOMER_TYPE_DESC = 'Consumer' THEN 'Consumer'
                 WHEN CUSTOMER_TYPE_DESC = 'Business' THEN 'Business'
@@ -50,7 +50,8 @@ def get_data(row_limit, from_date_customer, from_date_dispute):
             (SELECT DISTINCT ACCOUNT_NO_ANON, RESOLUTION_DATE FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
             WHERE STATUS_DESC = 'Justified' and RESOLUTION_DATE >= '{0}') Disputes
             on Disputes.ACCOUNT_NO_ANON = Customers.CUSTOMER_NO_ANON
-            WHERE BILL_MONTH >= '{1}'
+            WHERE CUSTOMER_TYPE_DESC <> 'Government' AND
+            BILL_MONTH >= '{1}'
             {2}""".format(from_date_customer, from_date_dispute, row_limit)
 
     df = pd.io.gbq.read_gbq(query, project_id='bcx-insights', dialect='standard')
@@ -58,9 +59,55 @@ def get_data(row_limit, from_date_customer, from_date_dispute):
     return df
 
 
+def get_pred_data(row_limit, from_date_customer):
+    if row_limit > 0:
+        row_limit = 'limit ' + str(row_limit)
+    else:
+        row_limit = ''
+
+    query = """SELECT DISTINCT
+            CUSTOMER_NO_ANON,
+            COUNT(CUSTOMER_NO_ANON) OVER (PARTITION BY CUSTOMER_NO_ANON, OFFER_DESC) Months_With_Offer,
+            CASE
+                WHEN CUSTOMER_TYPE_DESC = 'Consumer' THEN 'Consumer'
+                WHEN CUSTOMER_TYPE_DESC = 'Business' THEN 'Business'
+            ELSE
+                'Other'
+            END as CUSTOMER_TYPE_DESC,
+            OFFER_DESC,
+            COMMITMENT_PERIOD,
+            TOTAL_AMOUNT,
+            AVG(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Avg_Amount,
+            STDDEV_POP(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Std_Amount,
+            CASE
+                WHEN LOWER(CREDIT_CLASS_DESC) = 'spclow' THEN 'special low'
+                WHEN LOWER(CREDIT_CLASS_DESC) = 'highrisk' THEN 'high'
+                WHEN LOWER(CREDIT_CLASS_DESC) = 'medrisk' THEN 'medium'
+                WHEN LOWER(CREDIT_CLASS_DESC) = 'newrisk' THEN 'new'
+                WHEN LOWER(CREDIT_CLASS_DESC) = 'lowrisk' THEN 'low'
+            ELSE
+                LOWER(CREDIT_CLASS_DESC)
+            END as CREDIT_CLASS_DESC,
+            SERVICE_TYPE,
+            BILL_MONTH
+            FROM `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` Customers
+            WHERE CUSTOMER_TYPE_DESC <> 'Government' AND
+            BILL_MONTH >= '{0}'
+            ORDER BY BILL_MONTH
+            {1}
+            """.format(from_date_customer, row_limit)
+
+    df = pd.io.gbq.read_gbq(query, project_id='bcx-insights', dialect='standard')
+
+    return df
+
 def preprocess(df):
     columns_to_drop = ['ACCOUNT_NO_ANON', 'RESOLUTION_DATE', 'BILL_MONTH']
-    df = df.drop(columns_to_drop, 1)
+
+    for c in columns_to_drop:
+        if c in df.columns:
+            df = df.drop(c, 1)
+
     df['COMMITMENT_PERIOD'] = df['COMMITMENT_PERIOD'].astype(str)
 
     types = df.dtypes
@@ -85,12 +132,14 @@ def upsample(data, repetitions):
 
 
 def train_test_data(data_limit=500000):
-    df = get_data(data_limit)
+    df = get_train_data(data_limit, '2019-01-01', '2019-04-01')
 
     dispute_prop = round(df['Within_Dispute_Period'].sum()/df['Within_Dispute_Period'].count(), 3)
 
     df = upsample(df, int(0.2/dispute_prop))
     X = preprocess(df.drop('Within_Dispute_Period', 1))
+
+    X = X.sort_index(1)
     y = df['Within_Dispute_Period']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, test_size=0.3)
@@ -128,15 +177,28 @@ def predict_probs(x):
 
     model = load_model('model.h5')
 
-    accounts = x['ACCOUNT_NO_ANON']
     x = preprocess(x)
+
+    columns = []
+    with open('columns.txt', 'r') as f:
+        columns = [l.strip('\n') for l in f.readlines()]
+
+    for c in columns:
+        if c not in x.columns:
+            x[c] = 0
+
+    for c in x.columns:
+        if c not in columns:
+            x = x.drop(c, 1)
+
+    x = x.sort_index(1)
 
     predictions = pd.DataFrame(model.predict(x), columns=['probability'], index=x.index)
     return predictions
 
 
 def get_current_customer_data():
-    return get_data(100000, '2019-07-01', '2019-04-01')
+    return get_pred_data(100000, '2019-07-01')
 
 
 def default_risk_graph():
@@ -145,6 +207,7 @@ def default_risk_graph():
 
 def get_bar_graph():
     x_pred = get_current_customer_data()
+    accounts = x_pred['CUSTOMER_NO_ANON']
     graph_data = predict_probs(x_pred)
 
     graph_data = graph_data[graph_data['probability'] >= 0.3]
@@ -161,7 +224,7 @@ def get_bar_graph():
     c = graph_data['category']
 
     fig = go.Figure(
-                data=[go.Bar(x=x, y=y)],
-                marker=dict(color=c))
+                data=[go.Bar(x=x, y=y, marker_color=c)],
+                )
 
     return fig
