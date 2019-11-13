@@ -62,7 +62,7 @@ for s in Data_df['source'].unique():
     
 import plotly.graph_objects as go
 
-fig =go.Figure(go.Sunburst(
+sun =go.Figure(go.Sunburst(
     labels=label,
     parents=parent,
     values=value,
@@ -70,7 +70,7 @@ fig =go.Figure(go.Sunburst(
     maxdepth=2
 ))
 
-fig.update_layout(margin = dict(t=0, l=0, r=0, b=0))
+sun.update_layout(margin = dict(t=0, l=0, r=0, b=0))
 
 layout = html.Div([
     html.H1('Telkom Customer Sunburst',style={'text-align':'center'}),
@@ -83,10 +83,10 @@ layout = html.Div([
     start_date=(dt.today() - timedelta(days=30)).date()
     )], style = {'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center'}), 
     html.Div(
-        [dcc.Graph(figure=fig)],
+        [dcc.Graph(id='sun',figure=sun)],
         style={'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'}),
     html.Div(id='output', style={'clear': 'both','display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'})
-])
+],style={'width': '90%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'})
 
 @app.callback(Output('output', 'children'), [Input('sun', 'selectedPath')])
 def display_selected(selected_path):
