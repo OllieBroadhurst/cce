@@ -1,3 +1,4 @@
+#import required packages
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -11,11 +12,22 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 
-
-from app import app
-
 #Filter variables
 Deals = 'TBiz BB Capped Advanced'
+
+#'TBiz BB Capped Advanced' 7846
+# Unlimited Home Fibre 20Mbps (24 Month) 7277
+# DDI Range Offer 10103
+# 'Waya-Waya Pre-Paid Offer' 126112
+# Enterprise Internet 805
+# Router Card and Switches 6977
+# Unlimited Business Fibre (20 Mbps) 24 Months 5136
+# Business ECDSL Bundle 36252
+# Deregulated PABX 43258
+# Unlimited Business DSL (4Mbps) M2M 24500
+
+#query from BigQuery
+#must be ordered by ORDER_CREATION_DATE
 
 query = """
 SELECT *
@@ -39,7 +51,6 @@ unique_col = 'combo'
 
 orders_df[unique_col] = orders_df['MSISDN_ANON']+'_'+orders_df['ORDER_ID_ANON']
 
-
 orders_df['stage'] = orders_df.groupby(unique_col).cumcount()+1
 
 final_stage = orders_df[[unique_col,'stage', 'ORDER_CREATION_DATE']].groupby(unique_col).agg({'stage': 'max', 'ORDER_CREATION_DATE': ['min', 'max']})
@@ -56,11 +67,15 @@ orders_df['stage'] = orders_df['stage'].astype(str)
 
 orders_df['ActionType_OrderStatus'] = orders_df['ACTION_TYPE_DESC'] +' * '+ orders_df['ORDER_STATUS_DESC'] 
 
-type_status = list(orders_df['ActionType_OrderStatus'].unique())
+type_status = list(sorted(orders_df['ActionType_OrderStatus'].unique()))
+
+max_string_len = len(max(type_status, key=len))
 
 orders_df['stage_ActionType_OrderStatus'] = orders_df['stage'] +') * '+ orders_df['ACTION_TYPE_DESC'] +' * '+ orders_df['ORDER_STATUS_DESC'] 
 
 customers = list(orders_df[unique_col].unique())
+
+sorted_df = orders_df.sort_values('stage', ascending=False)
 
 # Create a networkx graph object
 J = nx.Graph()
@@ -70,8 +85,6 @@ J.clear()
 max_stage=max(orders_df['stage'].astype(int))
 
 actions = list(orders_df['stage_ActionType_OrderStatus'].unique())
-
-#J.add_node(Deals[:3],posi=(0.4,10), color = 'purple', acc_time = 0, node_count = 1)
 
 for i in range(1,max_stage+1):
   
@@ -87,10 +100,23 @@ for i in range(1,max_stage+1):
     height =  type_status.index(label) +1
     #print(height)
     #print(height)
-    J.add_node(stage_actions[k],posi=(i*1.25,height), acc_time = 0, node_count = len(orders_df[orders_df['stage_ActionType_OrderStatus']==stage_actions[k]]))
+    J.add_node(stage_actions[k],posi=((max_string_len*0.01)+(max_stage*0.01)+(i*1.25),height), acc_time = 0, node_count = len(orders_df[orders_df['stage_ActionType_OrderStatus']==stage_actions[k]]))
     #print(stage_actions[k])
     #print((i,k+1))
     
+#Create label nodes
+L = nx.Graph()
+
+for l in range(len(type_status)):
+    label_start = type_status[l]
+    height =  type_status.index(label_start) +1
+    L.add_node(label_start,posi=(0.15,height))
+    #print(label_start)
+    
+# Draw the resulting graph
+pos = nx.get_node_attributes(J,'posi')
+#nx.draw(J, pos ,with_labels=True, font_weight='bold', font_size = 7)
+
 # clear edges
 J.remove_edges_from(list(J.edges()))
 
@@ -143,13 +169,12 @@ for c in customers:
                 J.edges[temp_df.iloc[i, -1],temp_df.iloc[(i+1),-1]]['color'] = 'red'
             else:
                 J.edges[temp_df.iloc[i, -1],temp_df.iloc[(i+1),-1]]['color'] = 'green'
-
+                
 for j in J.nodes:
     #print(j)
     #print(J.nodes[j]['acc_time'])
     #print(J.nodes[j]['node_count'])
     J.nodes[j]['ave_journey'] = round(J.nodes[j]['acc_time']/J.nodes[j]['node_count'],1)
-    
     
 # add edge weight attribute
 
@@ -179,29 +204,48 @@ if (max_count-min_count) == 0:
 else:                                                
     for (node1,node2,data) in J.edges(data=True):
         J.edges[node1,node2]['weight'] = round(((J.edges[node1,node2]['count']-min_count)/(max_count-min_count))*scale+1,1)
+    
+# Draw the resulting graph
+
+#mpl_fig = plt.figure()
+mpl_fig, ax = plt.subplots(1,1)
+
+#pos = nx.circular_layout(J)
+pos = nx.get_node_attributes(J,'posi')
+edges,colors = zip(*nx.get_edge_attributes(J,'color').items())
+edges,width = zip(*nx.get_edge_attributes(J,'weight').items())
 
 
+nx.draw(J,pos, ax=ax, with_labels=True, font_weight='bold', font_size = 8, edgelist=edges, edge_color=colors, width = width
+       )
 
+edge_labels  = nx.get_edge_attributes(J,'ave_days')
+#label_color  = nx.get_edge_attributes(J,'color').values()
 
+#print(pos)
 
+for e in J.edges(data=True):
+    #print(e)
+    #print(e[0])
+    #print(e[1])
+    #print(e[2])
+    #print(e[2]['color'])
+    nx.draw_networkx_edge_labels(J,ax=ax, pos=pos,edge_labels={(e[0],e[1]):e[2]['ave_days']}, font_color = e[2]['color'])
+    
 
+pos_attrs = {}
+for node, coords in pos.items():
+    pos_attrs[node] = (coords[0] - 0.01, coords[1] - 0.5)
 
+node_attrs = nx.get_node_attributes(J, 'ave_journey')
+custom_node_attrs = {}
+for node, attr in node_attrs.items():
+    custom_node_attrs[node] = "{'Ave': '" + str(attr) + "'}"
 
+nx.draw_networkx_labels(J, pos_attrs, labels=custom_node_attrs, font_weight='bold', font_size = 8)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#plt.savefig('stage_transition_edge_colour')
+#plt.show()
 
 #Create Edges
 def make_edge(x, y, width, color):
@@ -221,7 +265,6 @@ def make_edge(x, y, width, color):
                 line=dict(width=width,color=color),
                 hoverinfo=None,
                 mode='lines')
-
 
 #Create Edges hpver text
 def edge_hover(x, y, hover_txt, color):
@@ -246,8 +289,10 @@ def edge_hover(x, y, hover_txt, color):
                             ),
                 marker=go.Marker(opacity=0.1, symbol = 'triangle-left')
                 )
-                
 data_trace = []
+
+p_0=5
+p_1=4
 
 for edge in J.edges(data=True):
     x0, y0 = J.nodes[edge[0]]['posi']
@@ -256,14 +301,14 @@ for edge in J.edges(data=True):
     x=tuple([x0, x1, None])
     y=tuple([y0, y1, None])
     
-    xh = tuple([(x0/3*2+x1/3),None])
-    yh = tuple([(y0/3*2+y1/3),None])
+    xh = tuple([(x0/(p_0+p_1)*p_0+x1/(p_0+p_1)*p_1),None])
+    yh = tuple([(y0/(p_0+p_1)*p_0+y1/(p_0+p_1)*p_1),None])
     
     #print(edge)
     
     width = edge[2]['weight']
     color = edge[2]['color']
-    hover_txt = 'Ave_days:' + str(round(edge[2]['days']/edge[2]['count'],1))
+    hover_txt = 'Count: '+ str(round(edge[2]['count'],1)) + '<br />Ave_days: ' + str(round(edge[2]['days']/edge[2]['count'],1))
     
     #print(width)
     
@@ -271,7 +316,8 @@ for edge in J.edges(data=True):
     #if else
     data_trace.append(edge_hover(xh,yh,hover_txt,color))
     
-    
+#data_trace
+
 node_trace = go.Scatter(
     x=[],
     y=[],
@@ -284,7 +330,7 @@ node_trace = go.Scatter(
         #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
         #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
         #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-        colorscale='YlGnBu',
+        colorscale='Blackbody',
         reversescale=True,
         color=[],
         size=10,
@@ -301,51 +347,70 @@ for node in J.nodes():
     node_trace['x'] += tuple([x])
     node_trace['y'] += tuple([y])
     
+
+
 for node in J.nodes(data=True):
     #print(node)
     node_trace['marker']['color']+=tuple([node[1]['node_count']])
     node_info = node[0]+ '<br />Journeys: ' +str(node[1]['node_count']) + '<br />Ave_journey: '+str(round(node[1]['acc_time']/node[1]['node_count'],1))
     node_trace['text']+=tuple([node_info])
-
+    
+    
+    
 data_trace.append(node_trace)
+
+label_size = max(round(16-(len(type_status)/6),0),4)
+
+label_trace = go.Scatter(
+    x=[],
+    y=[],
+    text=[],
+    mode='text',
+    hoverinfo='none',
+    opacity=0.8,
+    textposition='middle right',
+    textfont=dict( size = label_size,
+                  color='#888'
+                 )
+    )
+
+for label in L.nodes():
+    x, y = L.nodes[label]['posi']
+    #print(L.nodes[label]['posi'])
+    label_trace['x'] += tuple([x])
+    label_trace['y'] += tuple([y])
+    label_trace['text']+= tuple([label])
+
+
+data_trace.append(label_trace)
 
 fig = go.Figure(data=data_trace,
              layout=go.Layout(
-                title='<br>Stage progession on ORDER_ID_ANON and MSISDN_ANON',
+                title='<br>Network graph made with Python',
                 titlefont=dict(size=16),
                 showlegend=False,
                 hovermode='closest',
                 margin=dict(b=20,l=5,r=5,t=40),
-                #annotations=[ dict(
-                    #text="Python code: <a href='https://plot.ly/ipython-notebooks/network-#graphs/'> https://plot.ly/ipython-notebooks/network-graphs/</a>",
-                    #showarrow=False,
-                    #xref="paper", yref="paper",
-                    #x=0.005, y=-0.002 ) ],
+                annotations=[ dict(
+                    text=None,
+                    showarrow=False,
+                    xref="paper", yref="paper",
+                    x=0.005, y=-0.002 ) ],
                 xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                 yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
                 
-#ply.offline.plot(fig, filename='network_hover_dash_nodes.html')
+#ply.offline.plot(fig, filename='order_stages_with_label.html')
 
-
-#app = dash.Dash()
-
-layout = html.Div([dcc.Graph(id="my-graph", figure = fig,style={'top':0,
+layout = html.Div([
+    html.Div([html.H1("Networkx Stage Graph")], className="row", style={'textAlign': "center"}),
+    html.Div([dcc.Graph(id="my-graph", figure = fig,style={'top':0,
            'right': 0,
            'width':'95%',
            'height':'770px',
            'position':'absolute',
-          })])
+          })]),
+], className="container")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+    
