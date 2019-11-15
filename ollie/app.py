@@ -88,7 +88,7 @@ top_filters = html.Div([
                     'width': '250px'})])
 
 bottom_filters = html.Div([
-    html.Div([html.H5(children='Date Range', style=header_style),
+    html.Div([html.H5(children='Journeys Starting Between', style=header_style),
               dcc.DatePickerRange(
                   id='date_filter',
                   display_format='YYYY-MM-DD',

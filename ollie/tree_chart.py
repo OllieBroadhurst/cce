@@ -1,4 +1,5 @@
 import math
+import re
 
 import plotly.graph_objects as go
 import numpy as np
@@ -212,9 +213,9 @@ def get_figure(df=None, service_types=None, customer_types=None,
             text_positions.append('top center')
 
         total_count = 0
-        for r in routes.keys():
-            if node == r[1]:
-                total_count += len(routes[r]['Customers'])
+        # for r in routes.keys():
+        #     if node == r[1]:
+        #         total_count += len(routes[r]['Customers'])
 
         if total_count == 0:
             total_count = all_nodes[node]['count']
@@ -227,9 +228,9 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     route_data.append(pd.Series(routes[r]['Customers']))
 
             if len(route_data) > 1:
-                route_data = pd.concat(route_data).sort_index(0).to_string().replace('\n', '<br>' + ' ' * 16)
+                route_data = pd.concat(route_data).drop_duplicates().sort_index().to_string().replace('\n', '<br>')
             elif len(route_data) == 1:
-                route_data = route_data[0].sort_index(0).to_string().replace('\n', '<br>' + ' ' * 16)
+                route_data = route_data[0].drop_duplicates().sort_index().to_string().replace('\n', '<br>')
             else:
                 node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
                 'MSISDN_ANON', 'Coordinates']].drop_duplicates()
@@ -239,10 +240,13 @@ def get_figure(df=None, service_types=None, customer_types=None,
                 ids = [str(ids) for ids in node_data['ORDER_ID_ANON']]
                 devices = [str(dev) for dev in node_data['MSISDN_ANON']]
 
-                route_data = '<br>'.join([f'{i[0]}\t\t{i[1]}\t\t{i[2]}' for i in zip(accs, ids, devices)])
+                data_index = list(zip(accs, ids))
+                route_data = dict(zip(data_index, devices))
+                route_data = pd.Series(route_data)
+                route_data = route_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
 
-
-            hover_labels.append(f'{lab}<br>Acc\tOrder\tDevice<br>{route_data}')
+            route_data = re.sub(r'(\s{8})\s+', ' ' * 41, route_data)
+            hover_labels.append(f'{lab}<br>x={node[0]}y={node[1]}<br>Acc\tOrder\tDevice<br>{route_data}')
         else:
             hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
