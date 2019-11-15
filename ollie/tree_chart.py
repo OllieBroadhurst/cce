@@ -161,7 +161,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
     links = df[['Coordinates', 'Coordinates_Next']].dropna().groupby('Coordinates')['Coordinates_Next'].apply(
         list).to_dict()
 
-    colours = ['green'] * len(all_nodes)
+    colours = ['green'] * len([n for n in all_nodes.keys() if all_nodes[n]['count'] > 0])
     node_x = [n[0] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
     node_y = [n[1] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
 
@@ -347,9 +347,9 @@ def find_journey(figure, paths, routes, x, y):
                 order_counts = str(len(orders)) + 'order'
                 device_counts = str(len(devices)) + 'device'
 
-                customer_counts = 's' if customer_counts > 0 else customer_counts
-                order_counts += 's' if order_counts > 0 else order_counts
-                device_counts += 's' if device_counts > 0 else device_counts
+                customer_counts = 's' if len(customers) > 0 else customer_counts
+                order_counts += 's' if len(orders) > 0 else order_counts
+                device_counts += 's' if len(devices) > 0 else device_counts
 
 
                 customer_hours = f'{str(routes[t]["Duration"])} hour'
