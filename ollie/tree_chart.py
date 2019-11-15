@@ -162,8 +162,8 @@ def get_figure(df=None, service_types=None, customer_types=None,
         list).to_dict()
 
     colours = ['green'] * len(all_nodes)
-    node_x = [x[0] for x in all_nodes.keys()]
-    node_y = [y[1] for y in all_nodes.keys()]
+    node_x = [n[0] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
+    node_y = [n[1] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
 
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
@@ -212,42 +212,29 @@ def get_figure(df=None, service_types=None, customer_types=None,
         else:
             text_positions.append('top center')
 
-        total_count = 0
-        # for r in routes.keys():
-        #     if node == r[1]:
-        #         total_count += len(routes[r]['Customers'])
+        total_count = all_nodes[node]['count']
 
-        if total_count == 0:
-            total_count = all_nodes[node]['count']
+        if total_count <= hover_item_limit and total_count > 0:
 
-        if total_count <= hover_item_limit:
+            for node in all_nodes.keys():
 
-            route_data = []
-            for r in routes.keys():
-                if node == r[1]:
-                    route_data.append(pd.Series(routes[r]['Customers']))
-
-            if len(route_data) > 1:
-                route_data = pd.concat(route_data).drop_duplicates().sort_index().to_string().replace('\n', '<br>')
-            elif len(route_data) == 1:
-                route_data = route_data[0].drop_duplicates().sort_index().to_string().replace('\n', '<br>')
-            else:
                 node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
                 'MSISDN_ANON', 'Coordinates']].drop_duplicates()
 
-                node_data = node_df[node_df['Coordinates'] == node]
-                accs = [str(acc) for acc in node_data['ACCOUNT_NO_ANON']]
-                ids = [str(ids) for ids in node_data['ORDER_ID_ANON']]
-                devices = [str(dev) for dev in node_data['MSISDN_ANON']]
+                node_data = node_df.loc[node_df['Coordinates'] == node, ['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON']]
 
-                data_index = list(zip(accs, ids))
-                route_data = dict(zip(data_index, devices))
-                route_data = pd.Series(route_data)
-                route_data = route_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
+                # We reset the index so that all accounts, devices and orders are grouped nicely
+                # Devices will only be grouped nucely with orders if we add the third 'invisible' index
+                node_data = node_data.set_index(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', [''] * len(node_data)])
 
-            route_data = re.sub(r'(\s{8})\s+', ' ' * 41, route_data)
-            hover_labels.append(f'{lab}<br>x={node[0]}y={node[1]}<br>Acc\tOrder\tDevice<br>{route_data}')
-        else:
+                node_data = pd.Series(node_data.values.T[0], index=node_data.index)
+                node_data = node_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
+
+                node_data = re.sub(r'(\s{8})\s+', ' ' * 41, node_data)
+                node_data = node_data.replace('ACCOUNT_NO_ANON', 'Customer' + ' ' * 25)
+                node_data = node_data.replace('ORDER_ID_ANON', 'Order ID' + ' ' * 20 + 'Device ID')
+                hover_labels.append(f'{lab}<br>x={node[0]} y={node[1]}<br>{node_data}')
+        elif total_count > hover_item_limit:
             hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
     traces = go.Scatter(
