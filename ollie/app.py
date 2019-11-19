@@ -173,12 +173,13 @@ app.layout = html.Div([
     html.Div(children='{}', id='history', style={'display': 'none'}),
     html.Div(children='{}', id='links', style={'display': 'none'}),
     html.Div(children='{}', id='routes', style={'display': 'none'}),
-    html.Div(children='{}', id='desc_map', style={'display': 'none'})
+    html.Div(children='{}', id='hover_labels', style={'display': 'none'})
 ],
     style={'overflow-y': 'hidden'})
 
 outputs = [Output('tree_chart', 'figure'), Output('history', 'children'),
-           Output('links', 'children'), Output('routes', 'children')]
+           Output('links', 'children'), Output('routes', 'children'),
+           Output('hover_labels', 'children')]
 
 inputs = [Input('run_button', 'n_clicks'), Input('tree_chart', 'clickData')]
 
@@ -189,20 +190,23 @@ states = [State('service_filter', 'value'), State('customer_type_filter', 'value
           State('date_filter', 'start_date'), State('date_filter', 'end_date'),
           State('dispute_filter', 'value'), State('final_action_filter', 'value'),
           State('fault_filter', 'value'), State('hours_slider', 'value'),
-          State('has_action_filter', 'value')]
+          State('has_action_filter', 'value'), State('hover_labels', 'children')]
 
 
 @app.callback(outputs, inputs, states)
 def generate_tree(click_btn, node_click, services, types,
                   btn_history, current_fig, links, routes,
                   deals, status, start_date_val, end_date_val, dispute_val,
-                  action_filter, fault_filter, min_hours, has_action):
+                  action_filter, fault_filter, min_hours, has_action,
+                  hover_labels):
     history = json.loads(btn_history)
     links = json.loads(links)
     routes = json.loads(routes)
+    labels = json.loads(hover_labels)
 
     links = {literal_eval(k): v for k, v in links.items()}
     routes = {literal_eval(k): literal_eval(v) for k, v in routes.items()}
+    labels = {literal_eval(k): v for k, v in labels.items()}
 
     if deals is not None:
         deals = sum([literal_eval(d) for d in deals], [])
@@ -213,11 +217,16 @@ def generate_tree(click_btn, node_click, services, types,
                                         action_filter, fault_filter, min_hours,
                                         has_action)
 
+        labels = fig['data'][0]['hovertext']
+        x_y = list(zip(fig['data'][0]['x'], fig['data'][0]['y']))
+
+        labels = {str(x_y[i]): k for i, k in enumerate(labels)}
+
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}
         routes = {str(k): str(v) for k, v in routes.items()}
 
-        return fig, json.dumps(history), json.dumps(links), json.dumps(routes)
+        return fig, json.dumps(history), json.dumps(links), json.dumps(routes), json.dumps(labels)
 
     elif node_click is not None and history.get('1') is not None:
 
@@ -228,11 +237,14 @@ def generate_tree(click_btn, node_click, services, types,
                                    links,
                                    routes,
                                    selection_x,
-                                   selection_y)
+                                   selection_y,
+                                   labels)
 
         links = {str(k): v for k, v in links.items()}
         routes = {str(k): str(v) for k, v in routes.items()}
-        return current_fig, json.dumps(history), json.dumps(links), json.dumps(routes)
+        labels = {str(k): v for k, v in labels.items()}
+
+        return current_fig, json.dumps(history), json.dumps(links), json.dumps(labels)
     else:
         raise PreventUpdate
 

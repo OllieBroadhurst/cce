@@ -26,6 +26,7 @@ def get_all_nodes(data_frame):
     all_nodes = pd.merge(all_nodes_count, all_nodes_actions, left_index=True, right_index=True)
     all_nodes.columns = ['count', 'label', 'stage']
     all_nodes = all_nodes.T.to_dict()
+    all_nodes = {n: v for n, v in all_nodes.items() if all_nodes[n]['count'] > 0}
     return all_nodes
 
 
@@ -161,10 +162,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
     links = df[['Coordinates', 'Coordinates_Next']].dropna().groupby('Coordinates')['Coordinates_Next'].apply(
         list).to_dict()
 
-    colours = ['green'] * len([n for n in all_nodes.keys() if all_nodes[n]['count'] > 0])
-    node_x = [n[0] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
-    node_y = [n[1] for n in all_nodes.keys() if all_nodes[n]['count'] > 0]
-
+    colours = ['green'] * len([n for n in all_nodes.keys()])
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
     mean_duration = np.mean([v['Duration'] for v in routes. values()])
@@ -204,7 +202,13 @@ def get_figure(df=None, service_types=None, customer_types=None,
     node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
     'MSISDN_ANON', 'Coordinates']].drop_duplicates()
 
+    node_x = []
+    node_y = []
+
     for node, v in all_nodes.items():
+        node_x.append(node[0])
+        node_y.append(node[1])
+
         lab = v['label']
 
         if v['stage'] < df['Stage'].value_counts().index[-1]:
@@ -216,24 +220,19 @@ def get_figure(df=None, service_types=None, customer_types=None,
 
         if total_count <= hover_item_limit and total_count > 0:
 
-            for node in all_nodes.keys():
+            node_data = node_df.loc[node_df['Coordinates'] == node, ['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON']]
 
-                node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
-                'MSISDN_ANON', 'Coordinates']].drop_duplicates()
+            # We reset the index so that all accounts, devices and orders are grouped nicely
+            # Devices will only be grouped nucely with orders if we add the third 'invisible' index
+            node_data = node_data.set_index(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', [''] * len(node_data)])
 
-                node_data = node_df.loc[node_df['Coordinates'] == node, ['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON']]
+            node_data = pd.Series(node_data.values.T[0], index=node_data.index)
+            node_data = node_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
 
-                # We reset the index so that all accounts, devices and orders are grouped nicely
-                # Devices will only be grouped nucely with orders if we add the third 'invisible' index
-                node_data = node_data.set_index(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', [''] * len(node_data)])
-
-                node_data = pd.Series(node_data.values.T[0], index=node_data.index)
-                node_data = node_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
-
-                node_data = re.sub(r'(\s{8})\s+', ' ' * 41, node_data)
-                node_data = node_data.replace('ACCOUNT_NO_ANON', 'Customer' + ' ' * 25)
-                node_data = node_data.replace('ORDER_ID_ANON', 'Order ID' + ' ' * 20 + 'Device ID')
-                hover_labels.append(f'{lab}<br>x={node[0]} y={node[1]}<br>{node_data}')
+            node_data = re.sub(r'(\s{8})\s+', ' ' * 41, node_data)
+            node_data = node_data.replace('ACCOUNT_NO_ANON', 'Customer' + ' ' * 19)
+            node_data = node_data.replace('ORDER_ID_ANON', 'Order ID' + ' ' * 30 + 'Device ID')
+            hover_labels.append(f'{lab}<br>{node_data}')
         elif total_count > hover_item_limit:
             hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
@@ -285,7 +284,7 @@ def highlight_route(paths, node):
     return route_x, route_y
 
 
-def find_journey(figure, paths, routes, x, y):
+def find_journey(figure, paths, routes, x, y, hover_labels):
     route_x, route_y = highlight_route(paths, [(x, y)])
 
     link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
@@ -317,6 +316,8 @@ def find_journey(figure, paths, routes, x, y):
             colours[selection_index] = 'blue'
             alphas[selection_index] = 0.9
 
+            
+
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
 
@@ -343,14 +344,18 @@ def find_journey(figure, paths, routes, x, y):
                 orders = customer_data['level_1'].drop_duplicates().tolist()
                 devices = customer_data[0].drop_duplicates().tolist()
 
-                customer_counts = str(len(customers)) + 'customer'
-                order_counts = str(len(orders)) + 'order'
-                device_counts = str(len(devices)) + 'device'
+                customer_counts = str(len(customers)) + ' customer'
+                order_counts = str(len(orders)) + ' order'
+                device_counts = str(len(devices)) + ' device'
 
-                customer_counts = 's' if len(customers) > 0 else customer_counts
-                order_counts += 's' if len(orders) > 0 else order_counts
-                device_counts += 's' if len(devices) > 0 else device_counts
+                if len(customers) > 1:
+                    customer_counts += 's'
 
+                if len(orders) > 1:
+                    order_counts += 's'
+
+                if len(devices) > 1:
+                    device_counts += 's'
 
                 customer_hours = f'{str(routes[t]["Duration"])} hour'
                 if routes[t]["Duration"] > 1 or routes[t]["Duration"] == 0:
