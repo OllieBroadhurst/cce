@@ -49,8 +49,7 @@ def get_chart(n):
     if n is not None:
         fig, table_data = get_bar_graph()
         table_columns = [{"name": i, "id": i} for i in table_data.columns]
-        table_records = table_data.to_dict('records')
-        print(table_records)
+        table_records = table_data.to_dict('records')        
         return fig, table_columns, table_records
     else:
         raise PreventUpdate

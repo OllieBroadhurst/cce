@@ -264,8 +264,11 @@ def get_bar_graph():
     graph_data = graph_data.join(accounts)
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
 
-    model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']].sort_values('probability', ascending=False).head(10)
+    model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']].head(30)
     model_table_data = model_table_data.join(x_pred[['OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount']])
+    model_table_data = model_table_data.sort_values(['probability', 'Avg_Amount'], ascending=[False, False])
+    model_table_data['probability'] = model_table_data['probability'].round(2)
+    model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
     x_pred = None
 
