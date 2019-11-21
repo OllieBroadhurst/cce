@@ -225,6 +225,7 @@ def generate_tree(click_btn, node_click, services, types,
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}
         routes = {str(k): str(v) for k, v in routes.items()}
+        labels = {str(k): v for k, v in labels.items()}
 
         return fig, json.dumps(history), json.dumps(links), json.dumps(routes), json.dumps(labels)
 
@@ -244,7 +245,7 @@ def generate_tree(click_btn, node_click, services, types,
         routes = {str(k): str(v) for k, v in routes.items()}
         labels = {str(k): v for k, v in labels.items()}
 
-        return current_fig, json.dumps(history), json.dumps(links), json.dumps(labels)
+        return current_fig, json.dumps(history), json.dumps(links), json.dumps(routes), json.dumps(labels)
     else:
         raise PreventUpdate
 

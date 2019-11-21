@@ -258,7 +258,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                     annotations=arrows)
                     )
-
+    print(routes)
     return figure, links, routes
 
 
@@ -316,7 +316,19 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
             colours[selection_index] = 'blue'
             alphas[selection_index] = 0.9
 
-            
+        filtered_hover_labels = []
+        destination_nodes = [node[1] for node in route_coords]
+
+        for node in route_coords:
+            if node[1] in destination_nodes:
+                for n in routes.keys():
+                    if node == n:
+                        node_df = pd.Series(routes[node]['Customers'])
+                        filtered_hover_labels.append(node_df.to_string().replace('\n', '<br>'))
+            else:
+                filtered_hover_labels.append(hover_labels[node])
+
+        print(filtered_hover_labels)
 
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
@@ -330,7 +342,8 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
         figure.add_trace(go.Scatter(
             x=route_x, y=route_y,
             line=dict(width=3, color=f'rgba(255, 0, 0, 0.9)'),
-            hoverinfo='none',
+            hoverinfo='text',
+            hovertext=filtered_hover_labels,
             mode='lines'))
 
         annotations = list(figure['layout']['annotations'])
@@ -384,6 +397,8 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
         for i, line in enumerate(figure['layout']['annotations']):
             c = line['arrowcolor']
             figure['layout']['annotations'][i]['arrowcolor'] = c.replace('0.1', f'{line_alpha}')
+
+        figure['data'][0]['hovertext'] = list(hover_labels.values())
 
     return figure
 
