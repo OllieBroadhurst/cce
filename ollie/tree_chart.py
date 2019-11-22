@@ -370,7 +370,7 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
                 if len(devices) > 1:
                     device_counts += 's'
 
-                customer_hours = f'{str(routes[t]["Duration"])} hour'
+                customer_hours = f'{str(int(routes[t]["Duration"]))} hour'
                 if routes[t]["Duration"] > 1 or routes[t]["Duration"] == 0:
                     customer_hours += 's'
 
