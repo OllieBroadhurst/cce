@@ -20,6 +20,11 @@ chart_margin = dict(b=0, l=5, r=5, t=0)
 chart_height = 700
 
 
+def calc_time(hours):
+    days = int(hours / 24)
+    hours = hours % 24
+    return f'{days}d, {hours}h'
+
 def get_all_nodes(data_frame):
     all_nodes_count = data_frame['Coordinates'].value_counts()
     all_nodes_actions = data_frame[['Coordinates', 'ACTION_TYPE_DESC', 'Stage']].set_index('Coordinates').drop_duplicates()
@@ -258,7 +263,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
                     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                     annotations=arrows)
                     )
-    print(routes)
+
     return figure, links, routes
 
 
@@ -370,7 +375,8 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
                 if len(devices) > 1:
                     device_counts += 's'
 
-                customer_hours = f'{str(int(routes[t]["Duration"]))} hour'
+                customer_hours = calc_time(int(routes[t]["Duration"]))
+
                 if routes[t]["Duration"] > 1 or routes[t]["Duration"] == 0:
                     customer_hours += 's'
 
