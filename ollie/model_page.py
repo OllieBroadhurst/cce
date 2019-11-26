@@ -8,7 +8,6 @@ from dash.exceptions import PreventUpdate
 import dash_table
 import json
 
-
 from modeling import get_bar_graph, default_risk_graph
 
 button = html.Div(html.Button('Run', id='predict_button', style={'float': 'right'}),

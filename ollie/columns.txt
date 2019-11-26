@@ -1,3 +1,5 @@
+Amount_Range
+Avg_Amount
 COMMITMENT_PERIOD_-
 COMMITMENT_PERIOD_0
 COMMITMENT_PERIOD_02
@@ -22,6 +24,8 @@ CREDIT_CLASS_DESC_special low
 CUSTOMER_TYPE_DESC_Business
 CUSTOMER_TYPE_DESC_Consumer
 CUSTOMER_TYPE_DESC_Other
+Had_Prior_Dispute
+Months_With_Offer
 OFFER_DESC_-
 OFFER_DESC_10gb+10gbinternet
 OFFER_DESC_10gb+10gbinternetdeal
@@ -1097,6 +1101,7 @@ SERVICE_TYPE_MOBILE
 SERVICE_TYPE_OTHER
 SERVICE_TYPE_VAS
 SERVICE_TYPE_VOICE
+Std_Amount
 Months_With_Offer
 Had_Prior_Dispute
 Avg_Amount

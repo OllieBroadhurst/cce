@@ -8,8 +8,6 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, classification_report
 
-
-
 import plotly.graph_objects as go
 
 
@@ -117,7 +115,7 @@ def get_current_customer_data(from_date_customer, to_date_customer, record_limit
             ELSE
                 'Other'
             END as CUSTOMER_TYPE_DESC,
-            replace(REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', ''), ' ', '') OFFER_DESC,
+            REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', '') OFFER_DESC,
             COMMITMENT_PERIOD,
             MAX(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC ORDER BY BILL_MONTH DESC ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) -
             MIN(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC ORDER BY BILL_MONTH DESC ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) Amount_Range,
@@ -154,7 +152,7 @@ def save_columns(from_date_customer, to_date_customer):
     ELSE
         'Other'
     END as CUSTOMER_TYPE_DESC,
-    replace(REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', ''), ' ', '') OFFER_DESC,
+    REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', '') OFFER_DESC,
     COMMITMENT_PERIOD,
     CASE
         WHEN LOWER(CREDIT_CLASS_DESC) = 'spclow' THEN 'special low'
