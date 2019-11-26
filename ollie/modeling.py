@@ -86,7 +86,7 @@ def get_train_data(from_date_customer, from_date_dispute, row_limit):
             END as CREDIT_CLASS_DESC,
             SERVICE_TYPE,
             BILL_MONTH,
-             IF(TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) < 122 AND TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) >=0, 1, 0) Within_Dispute_Period
+             IF(TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) < 32 AND TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) >=0, 1, 0) Within_Dispute_Period
             FROM `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` Customers
             LEFT JOIN
             (SELECT DISTINCT ACCOUNT_NO_ANON, RESOLUTION_DATE FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
@@ -246,7 +246,23 @@ def predict_probs(x):
 
 
 def default_risk_graph():
-    return go.Figure(data=[go.Bar(x=[], y=[])])
+    default_axis_params = dict(showgrid=False,
+                               zeroline=False,
+                               showticklabels=False,
+                               showline=False)
+
+    return go.FigureWidget({'data':
+        {
+            'x': [],
+            'y': [],
+            'mode': 'markers',
+            'marker': {'size': 1}
+        },
+        'layout': go.Layout(
+            xaxis=default_axis_params,
+            yaxis=default_axis_params
+        )})
+    #return go.Figure(data=[go.Bar(x=[], y=[])])
 
 
 def get_bar_graph():
@@ -264,7 +280,7 @@ def get_bar_graph():
     graph_data = graph_data.join(accounts)
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
 
-    model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']].head(30)
+    model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']]
     model_table_data = model_table_data.join(x_pred[['OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount']])
     model_table_data = model_table_data.sort_values(['probability', 'Avg_Amount'], ascending=[False, False])
     model_table_data['probability'] = model_table_data['probability'].round(2)
@@ -272,14 +288,15 @@ def get_bar_graph():
 
     x_pred = None
 
-    graph_data['bin'] = pd.cut(graph_data['probability'], bins=15).apply(lambda x: str(x.right) if x.left > graph_data['probability'].min() else '{0} - {1}'.format(x.left, x.right))
+    graph_data['bin'] = pd.cut(graph_data['probability'], bins=15).apply(lambda x: '{0} - {1}'.format(round(x.left, 2), round(x.right, 2)))
     graph_data = graph_data.sort_values('bin').drop_duplicates()
 
     graph_data = graph_data[['bin', 'CUSTOMER_NO_ANON', 'category']].groupby(['bin', 'category'], as_index=False).count()
     graph_data = graph_data.dropna()
 
     y = graph_data['CUSTOMER_NO_ANON']
-    x = graph_data['bin']
+    x = graph_data['bin'].astype(str)
+
     c = graph_data['category']
 
     fig = go.Figure(
