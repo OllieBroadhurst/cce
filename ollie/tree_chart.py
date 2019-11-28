@@ -1,5 +1,6 @@
 import math
 import re
+import copy
 
 import plotly.graph_objects as go
 import numpy as np
@@ -292,6 +293,9 @@ def highlight_route(paths, node):
 def find_journey(figure, paths, routes, x, y, hover_labels):
     route_x, route_y = highlight_route(paths, [(x, y)])
 
+    coords = list(zip(figure['data'][0]['x'], figure['data'][0]['y']))
+    selection_index = coords.index((x, y))
+
     link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
     route_coords = [(link_coords[i], link_coords[i + 1]) for i, _ in enumerate(link_coords) if i + 1 < len(link_coords)]
 
@@ -304,8 +308,7 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
     arrow_annotations = [a for a in figure['layout']['annotations'] if 'bordercolor' not in a.keys()]
     marker_colours = figure['data'][0]['marker']['color']
 
-    coords = list(zip(figure['data'][0]['x'], figure['data'][0]['y']))
-    selection_index = coords.index((x, y))
+    filtered_hover_labels = copy.deepcopy(hover_labels)
 
     if 'blue' not in marker_colours or (
             'blue' in marker_colours and figure['data'][0]['marker']['color'][selection_index] != 'blue'):
@@ -321,19 +324,16 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
             colours[selection_index] = 'blue'
             alphas[selection_index] = 0.9
 
-        filtered_hover_labels = []
         destination_nodes = [node[1] for node in route_coords]
 
-        for node in route_coords:
-            if node[1] in destination_nodes:
-                for n in routes.keys():
-                    if node == n:
-                        node_df = pd.Series(routes[node]['Customers'])
-                        filtered_hover_labels.append(node_df.to_string().replace('\n', '<br>'))
-            else:
-                filtered_hover_labels.append(hover_labels[node])
-
-        print(filtered_hover_labels)
+        # for nodes in route_coords:
+        #     hover_str = ''
+        #     for coords in routes:
+        #         if nodes[1] == coords[1] and coords[0] in link_coords and coords[1] in link_coords and nodes in routes.keys():
+        #             node_df = pd.Series(routes[nodes]['Customers'])
+        #             hover_str += node_df.to_string().replace('\n', '<br>')
+        #     hover_str = 'Customer' + ' ' * 30 + 'Order ID' + ' ' * 30 + 'Device ID<br>' + hover_str
+        #     filtered_hover_labels[nodes[1]] = hover_str
 
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
@@ -343,12 +343,13 @@ def find_journey(figure, paths, routes, x, y, hover_labels):
             c = line['arrowcolor']
             figure['layout']['annotations'][i]['arrowcolor'] = c.replace(f'{line_alpha}', '0.1')
 
+        figure['data'][0]['hovertext'] = list(filtered_hover_labels.values())
+
         figure = go.FigureWidget(data=figure)
+
         figure.add_trace(go.Scatter(
             x=route_x, y=route_y,
             line=dict(width=3, color=f'rgba(255, 0, 0, 0.9)'),
-            hoverinfo='text',
-            hovertext=filtered_hover_labels,
             mode='lines'))
 
         annotations = list(figure['layout']['annotations'])
