@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 
 TRAIN_DATA_LIMIT = 200000
-PREDICT_DATA_LIMIT = 100000
+PREDICT_DATA_LIMIT = 200000
 
 
 def data_preprocess(X):
@@ -262,13 +262,15 @@ def default_risk_graph():
 
 def get_bar_graph():
 
-    from_date = (datetime.today().date() - timedelta(days=61)).strftime('%Y-%m-%d')
-    to_date = datetime.today().date().strftime('%Y-%m-%d')
+    from_date = datetime(2019, 9,1).strftime('%Y-%m-%d')
+    to_date = datetime(2019, 11,13).strftime('%Y-%m-%d')
+    #from_date = (datetime.today().date() - timedelta(days=61)).strftime('%Y-%m-%d')
+    #to_date = datetime.today().date().strftime('%Y-%m-%d')
 
     check_for_model()
     x_pred = get_current_customer_data(from_date, to_date, PREDICT_DATA_LIMIT)
 
-    summary_stats = x_pred[['CUSTOMER_NO_ANON', 'OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount', 'OFFER_DESC']]
+    summary_stats = x_pred[['OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount']]
     x_pred = x_pred.drop('OFFER_DESC', 1)
 
     accounts = x_pred['CUSTOMER_NO_ANON']
@@ -281,12 +283,10 @@ def get_bar_graph():
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
 
     model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']]
-    model_table_data = model_table_data.join(summary_stats, on='CUSTOMER_NO_ANON')
+    model_table_data = model_table_data.join(summary_stats)
     model_table_data = model_table_data.sort_values(['probability', 'Avg_Amount'], ascending=[False, False])
     model_table_data['probability'] = model_table_data['probability'].round(2)
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
-
-
 
     graph_data['bin'] = pd.cut(graph_data['probability'], bins=15).apply(lambda x: '{0} - {1}'.format(round(x.left, 2), round(x.right, 2)))
     graph_data = graph_data.sort_values('bin').drop_duplicates()
