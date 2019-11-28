@@ -52,7 +52,6 @@ def data_preprocess(X):
 
     return X
 
-
 def get_train_data(from_date_customer, from_date_dispute, row_limit):
     if row_limit > 0:
         row_limit = 'limit ' + str(row_limit)
@@ -68,7 +67,6 @@ def get_train_data(from_date_customer, from_date_dispute, row_limit):
             ELSE
                 'Other'
             END as CUSTOMER_TYPE_DESC,
-            OFFER_DESC,
             COMMITMENT_PERIOD,
             TOTAL_AMOUNT,
             AVG(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Avg_Amount,
@@ -84,11 +82,11 @@ def get_train_data(from_date_customer, from_date_dispute, row_limit):
             END as CREDIT_CLASS_DESC,
             SERVICE_TYPE,
             BILL_MONTH,
-             IF(TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) < 32 AND TIMESTAMP_DIFF(Disputes.RESOLUTION_DATE, BILL_MONTH, DAY) >=0, 1, 0) Within_Dispute_Period
-            FROM `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` Customers
+             IF(TIMESTAMP_DIFF(Disputes.CREATE_DATE, BILL_MONTH, DAY) < 32 AND TIMESTAMP_DIFF(Disputes.CREATE_DATE, BILL_MONTH, DAY) >=0, 1, 0) Within_Dispute_Period
+            FROM `bcx-insights.telkom_customerexperience.customerdata_20191113_anon` Customers
             LEFT JOIN
-            (SELECT DISTINCT ACCOUNT_NO_ANON, RESOLUTION_DATE FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`
-            WHERE STATUS_DESC = 'Justified' and RESOLUTION_DATE >= '{0}') Disputes
+            (SELECT DISTINCT ACCOUNT_NO_ANON, CREATE_DATE FROM `bcx-insights.telkom_customerexperience.disputes_20191113_anon`
+            WHERE STATUS_OPEN_CLOSE = 'Justified' and CREATE_DATE >= '{0}') Disputes
             on Disputes.ACCOUNT_NO_ANON = Customers.CUSTOMER_NO_ANON
             WHERE CUSTOMER_TYPE_DESC <> 'Government' AND
             BILL_MONTH >= '{1}'
@@ -109,13 +107,13 @@ def get_current_customer_data(from_date_customer, to_date_customer, record_limit
             with temp_table as (
             SELECT DISTINCT
             CUSTOMER_NO_ANON,
+            OFFER_DESC,
             COUNT(CUSTOMER_NO_ANON) OVER (PARTITION BY CUSTOMER_NO_ANON, OFFER_DESC, PRIM_RESOURCE_VAL_ANON) Months_With_Offer,
             CASE
                 WHEN CUSTOMER_TYPE_DESC in ('Consumer', 'Business') THEN CUSTOMER_TYPE_DESC
             ELSE
                 'Other'
             END as CUSTOMER_TYPE_DESC,
-            REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', '') OFFER_DESC,
             COMMITMENT_PERIOD,
             MAX(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC ORDER BY BILL_MONTH DESC ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) -
             MIN(TOTAL_AMOUNT) OVER (Partition by CUSTOMER_NO_ANON, OFFER_DESC ORDER BY BILL_MONTH DESC ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) Amount_Range,
@@ -152,7 +150,6 @@ def save_columns(from_date_customer, to_date_customer):
     ELSE
         'Other'
     END as CUSTOMER_TYPE_DESC,
-    REGEXP_REPLACE(LOWER(REGEXP_REPLACE(OFFER_DESC, '\\b\\w*\\d+$', '')), '\\(\\w+ month\\)', '') OFFER_DESC,
     COMMITMENT_PERIOD,
     CASE
         WHEN LOWER(CREDIT_CLASS_DESC) = 'spclow' THEN 'special low'
@@ -206,7 +203,7 @@ def train_data(from_date_customer, from_date_dispute, data_limit=500000):
 def train_and_save_model():
     process_start_time = datetime.now()
 
-    from_date_customer = (datetime.today().date() - timedelta(days=185)).strftime('%Y-%m-%d')
+    from_date_customer = (datetime.today().date() - timedelta(days=60)).strftime('%Y-%m-%d')
     from_date_dispute = (datetime.today().date() - timedelta(days=212)).strftime('%Y-%m-%d')
 
     X, y = train_data(from_date_customer, from_date_dispute, TRAIN_DATA_LIMIT)
@@ -265,13 +262,18 @@ def default_risk_graph():
 
 def get_bar_graph():
 
-    from_date = (datetime.today().date() - timedelta(days=31)).strftime('%Y-%m-%d')
+    from_date = (datetime.today().date() - timedelta(days=61)).strftime('%Y-%m-%d')
     to_date = datetime.today().date().strftime('%Y-%m-%d')
 
     check_for_model()
     x_pred = get_current_customer_data(from_date, to_date, PREDICT_DATA_LIMIT)
+
+    summary_stats = x_pred[['CUSTOMER_NO_ANON', 'OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount', 'OFFER_DESC']]
+    x_pred = x_pred.drop('OFFER_DESC', 1)
+
     accounts = x_pred['CUSTOMER_NO_ANON']
     graph_data = predict_probs(x_pred)
+    x_pred = None
 
     graph_data = graph_data[graph_data['probability'] >= 0.3]
     graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x <= 0.5 else 'orange' if x < 0.75 else 'red')
@@ -279,12 +281,12 @@ def get_bar_graph():
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
 
     model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']]
-    model_table_data = model_table_data.join(x_pred[['OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount']])
+    model_table_data = model_table_data.join(summary_stats, on='CUSTOMER_NO_ANON')
     model_table_data = model_table_data.sort_values(['probability', 'Avg_Amount'], ascending=[False, False])
     model_table_data['probability'] = model_table_data['probability'].round(2)
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
-    x_pred = None
+
 
     graph_data['bin'] = pd.cut(graph_data['probability'], bins=15).apply(lambda x: '{0} - {1}'.format(round(x.left, 2), round(x.right, 2)))
     graph_data = graph_data.sort_values('bin').drop_duplicates()
