@@ -279,7 +279,7 @@ def get_bar_graph():
 
 
     graph_data = graph_data[graph_data['probability'] >= 0.19].drop_duplicates()
-    graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x <= 0.5 else 'orange' if x < 0.75 else 'red')
+    graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x < 0.5 else 'orange' if x < 0.75 else 'red')
     graph_data = graph_data.join(accounts)
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
 
