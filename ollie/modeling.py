@@ -290,8 +290,8 @@ def get_bar_graph():
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
     graph_data['bin'] = pd.cut(graph_data['probability'], bins=15)
-    print(graph_data)
-    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(round(x.left / (1 - 0.002) , 2), round(x.right, 2)))
+
+    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(round(x.left, 3), round(x.right / (1 - 0.002), 3)))
 
     graph_data = graph_data.sort_values('bin').drop_duplicates()
 
