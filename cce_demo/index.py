@@ -18,6 +18,11 @@ from apps.queries import criteria_tree_sql
 from app import app
 from apps import single_journey,scatter_agg,stages_network, orders_sunburst
 
+# Dash CSS
+app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+
+# Loading screen CSS
+app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
 
 sidebar_header = dbc.Row(
     [
@@ -92,11 +97,13 @@ sidebar = html.Div(
 
 #content = html.Div(id="page-content")
 
-content = dcc.Loading(id="content-loading", 
-                      children=[html.Div(id="page-content")],
-                      #fullscreen=True,
-                      #style={'position': 'absolute'}
-                      )
+#content = dcc.Loading(id="content-loading", 
+                      #children=[html.Div(id="page-content",style={'width' : '90%'})],
+                      ##fullscreen=True,
+                      ##style={'position': 'absolute'}
+                      #)
+
+content = html.Div(id="page-content",style={'width' : '90%'})
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 app.title = 'Project CCE'

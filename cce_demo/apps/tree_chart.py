@@ -1,4 +1,5 @@
 import math
+import re
 
 import plotly.graph_objects as go
 import numpy as np
@@ -19,12 +20,18 @@ chart_margin = dict(b=0, l=5, r=5, t=0)
 chart_height = 700
 
 
+def calc_time(hours):
+    days = int(hours / 24)
+    hours = hours % 24
+    return f'{days}d, {hours}h'
+
 def get_all_nodes(data_frame):
     all_nodes_count = data_frame['Coordinates'].value_counts()
     all_nodes_actions = data_frame[['Coordinates', 'ACTION_TYPE_DESC', 'Stage']].set_index('Coordinates').drop_duplicates()
     all_nodes = pd.merge(all_nodes_count, all_nodes_actions, left_index=True, right_index=True)
     all_nodes.columns = ['count', 'label', 'stage']
     all_nodes = all_nodes.T.to_dict()
+    all_nodes = {n: v for n, v in all_nodes.items() if all_nodes[n]['count'] > 0}
     return all_nodes
 
 
@@ -160,10 +167,7 @@ def get_figure(df=None, service_types=None, customer_types=None,
     links = df[['Coordinates', 'Coordinates_Next']].dropna().groupby('Coordinates')['Coordinates_Next'].apply(
         list).to_dict()
 
-    colours = ['green'] * len(all_nodes)
-    node_x = [x[0] for x in all_nodes.keys()]
-    node_y = [y[1] for y in all_nodes.keys()]
-
+    colours = ['green'] * len([n for n in all_nodes.keys()])
 
     mean_count = np.mean([v['Count'] for v in routes.values()])
     mean_duration = np.mean([v['Duration'] for v in routes. values()])
@@ -203,7 +207,13 @@ def get_figure(df=None, service_types=None, customer_types=None,
     node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
     'MSISDN_ANON', 'Coordinates']].drop_duplicates()
 
+    node_x = []
+    node_y = []
+
     for node, v in all_nodes.items():
+        node_x.append(node[0])
+        node_y.append(node[1])
+
         lab = v['label']
 
         if v['stage'] < df['Stage'].value_counts().index[-1]:
@@ -211,39 +221,24 @@ def get_figure(df=None, service_types=None, customer_types=None,
         else:
             text_positions.append('top center')
 
-        total_count = 0
-        for r in routes.keys():
-            if node == r[1]:
-                total_count += len(routes[r]['Customers'])
+        total_count = all_nodes[node]['count']
 
-        if total_count == 0:
-            total_count = all_nodes[node]['count']
+        if total_count <= hover_item_limit and total_count > 0:
 
-        if total_count <= hover_item_limit:
+            node_data = node_df.loc[node_df['Coordinates'] == node, ['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', 'MSISDN_ANON']]
 
-            route_data = []
-            for r in routes.keys():
-                if node == r[1]:
-                    route_data.append(pd.Series(routes[r]['Customers']))
+            # We reset the index so that all accounts, devices and orders are grouped nicely
+            # Devices will only be grouped nucely with orders if we add the third 'invisible' index
+            node_data = node_data.set_index(['ACCOUNT_NO_ANON', 'ORDER_ID_ANON', [''] * len(node_data)])
 
-            if len(route_data) > 1:
-                route_data = pd.concat(route_data).sort_index(0).to_string().replace('\n', '<br>' + ' ' * 16)
-            elif len(route_data) == 1:
-                route_data = route_data[0].sort_index(0).to_string().replace('\n', '<br>' + ' ' * 16)
-            else:
-                node_df = df[['ACCOUNT_NO_ANON', 'ORDER_ID_ANON',
-                'MSISDN_ANON', 'Coordinates']].drop_duplicates()
+            node_data = pd.Series(node_data.values.T[0], index=node_data.index)
+            node_data = node_data.drop_duplicates().sort_index().to_string().replace('\n', '<br>')
 
-                node_data = node_df[node_df['Coordinates'] == node]
-                accs = [str(acc) for acc in node_data['ACCOUNT_NO_ANON']]
-                ids = [str(ids) for ids in node_data['ORDER_ID_ANON']]
-                devices = [str(dev) for dev in node_data['MSISDN_ANON']]
-
-                route_data = '<br>'.join([f'{i[0]}\t\t{i[1]}\t\t{i[2]}' for i in zip(accs, ids, devices)])
-
-
-            hover_labels.append(f'{lab}<br>Acc\tOrder\tDevice<br>{route_data}')
-        else:
+            node_data = re.sub(r'(\s{8})\s+', ' ' * 41, node_data)
+            node_data = node_data.replace('ACCOUNT_NO_ANON', 'Customer' + ' ' * 19)
+            node_data = node_data.replace('ORDER_ID_ANON', 'Order ID' + ' ' * 30 + 'Device ID')
+            hover_labels.append(f'{lab}<br>{node_data}')
+        elif total_count > hover_item_limit:
             hover_labels.append(lab + f"<br>{str(all_nodes[node]['count'])}")
 
     traces = go.Scatter(
@@ -294,7 +289,7 @@ def highlight_route(paths, node):
     return route_x, route_y
 
 
-def find_journey(figure, paths, routes, x, y):
+def find_journey(figure, paths, routes, x, y, hover_labels):
     route_x, route_y = highlight_route(paths, [(x, y)])
 
     link_coords = [v for v in zip(route_x, route_y) if v[0] is not None]
@@ -326,6 +321,20 @@ def find_journey(figure, paths, routes, x, y):
             colours[selection_index] = 'blue'
             alphas[selection_index] = 0.9
 
+        filtered_hover_labels = []
+        destination_nodes = [node[1] for node in route_coords]
+
+        for node in route_coords:
+            if node[1] in destination_nodes:
+                for n in routes.keys():
+                    if node == n:
+                        node_df = pd.Series(routes[node]['Customers'])
+                        filtered_hover_labels.append(node_df.to_string().replace('\n', '<br>'))
+            else:
+                filtered_hover_labels.append(hover_labels[node])
+
+        print(filtered_hover_labels)
+
         figure['data'][0]['marker']['color'] = colours
         figure['data'][0]['marker']['opacity'] = alphas
 
@@ -338,7 +347,8 @@ def find_journey(figure, paths, routes, x, y):
         figure.add_trace(go.Scatter(
             x=route_x, y=route_y,
             line=dict(width=3, color=f'rgba(255, 0, 0, 0.9)'),
-            hoverinfo='none',
+            hoverinfo='text',
+            hovertext=filtered_hover_labels,
             mode='lines'))
 
         annotations = list(figure['layout']['annotations'])
@@ -352,16 +362,21 @@ def find_journey(figure, paths, routes, x, y):
                 orders = customer_data['level_1'].drop_duplicates().tolist()
                 devices = customer_data[0].drop_duplicates().tolist()
 
-                customer_counts = str(len(customers)) + 'customer'
-                order_counts = str(len(orders)) + 'order'
-                device_counts = str(len(devices)) + 'device'
+                customer_counts = str(len(customers)) + ' customer'
+                order_counts = str(len(orders)) + ' order'
+                device_counts = str(len(devices)) + ' device'
 
-                customer_counts = 's' if customer_counts > 0 else customer_counts
-                order_counts += 's' if order_counts > 0 else order_counts
-                device_counts += 's' if device_counts > 0 else device_counts
+                if len(customers) > 1:
+                    customer_counts += 's'
 
+                if len(orders) > 1:
+                    order_counts += 's'
 
-                customer_hours = f'{str(routes[t]["Duration"])} hour'
+                if len(devices) > 1:
+                    device_counts += 's'
+
+                customer_hours = calc_time(int(routes[t]["Duration"]))
+
                 if routes[t]["Duration"] > 1 or routes[t]["Duration"] == 0:
                     customer_hours += 's'
 
@@ -388,6 +403,8 @@ def find_journey(figure, paths, routes, x, y):
         for i, line in enumerate(figure['layout']['annotations']):
             c = line['arrowcolor']
             figure['layout']['annotations'][i]['arrowcolor'] = c.replace('0.1', f'{line_alpha}')
+
+        figure['data'][0]['hovertext'] = list(hover_labels.values())
 
     return figure
 

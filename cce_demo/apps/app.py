@@ -8,12 +8,11 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from apps.tree_chart import get_figure, find_journey, default_chart
+from tree_chart import get_figure, find_journey, default_chart
 
-from apps.filters import service_options, customer_type, has_dispute, has_fault
-from apps.filters import deal_desc, action_status, action_type
+from filters import service_options, customer_type, has_dispute, has_fault
+from filters import deal_desc, action_status, action_type
 
-from app import app
 import json
 from ast import literal_eval
 
@@ -164,11 +163,11 @@ filter_panel = dbc.Collapse(children=dbc.Card([button, top_filters, bottom_filte
                             id='collapse2',
                             is_open=True)
 
-#FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
 
-#app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESOME])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESOME])
 
-layout = html.Div([
+app.layout = html.Div([
     html.Div([collapse_button, filter_panel], style={'padding-top': '5px'}),
     graph,
     html.Div(children='{}', id='history', style={'display': 'none'}),

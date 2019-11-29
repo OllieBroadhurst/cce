@@ -8,5 +8,4 @@ pandas_gbq
 dash-cytoscape==0.1.1
 ipywidgets
 dash-bootstrap-components
-dash_cytoscape
 scikit-learn
