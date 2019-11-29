@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 
 TRAIN_DATA_LIMIT = 200000
-PREDICT_DATA_LIMIT = 400000
+PREDICT_DATA_LIMIT = 500000
 
 
 def data_preprocess(X):
@@ -286,7 +286,7 @@ def get_bar_graph():
     model_table_data = graph_data[['CUSTOMER_NO_ANON', 'probability']]
     model_table_data = model_table_data.join(summary_stats)
     model_table_data = model_table_data.sort_values(['probability', 'Avg_Amount'], ascending=[False, False])
-    model_table_data['probability'] = model_table_data['probability'].round(2)
+
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
     graph_data['bin'] = pd.cut(graph_data['probability'], bins=15)
