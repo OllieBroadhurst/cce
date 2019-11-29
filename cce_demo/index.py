@@ -16,7 +16,7 @@ from apps.filters import deal_desc, action_status, action_type
 from apps.queries import criteria_tree_sql
 
 from app import app
-from apps import single_journey,scatter_agg,stages_network, orders_sunburst
+from apps import single_journey,scatter_agg,stages_network, orders_sunburst,model_page
 
 # Dash CSS
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
@@ -85,6 +85,7 @@ sidebar = html.Div(
                     dbc.NavLink("Order Aggregate", href="/page-4", id="page-4-link"),
                     dbc.NavLink("Customer Aggregate", href="/page-2", id="page-2-link"),
                     dbc.NavLink("Single Journey", href="/page-3", id="page-3-link"),
+                    dbc.NavLink("Model", href="/page-5", id="page-5-link"),
                 ],
                 vertical=True,
                 pills=True,
@@ -103,7 +104,7 @@ sidebar = html.Div(
                       ##style={'position': 'absolute'}
                       #)
 
-content = html.Div(id="page-content",style={'width' : '90%'})
+content = html.Div(id="page-content",style={'width' : '100%'})
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 app.title = 'Project CCE'
@@ -125,7 +126,7 @@ def toggle_active_links(pathname):
 def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
         #time.sleep(1)
-        return orders_sunburst.layout#html.P("This is the content of page 1!")
+        return orders_sunburst.layout
     elif pathname == "/page-2":
         #time.sleep(1)
         return scatter_agg.layout
@@ -135,6 +136,9 @@ def render_page_content(pathname):
     elif pathname == "/page-4":
         #time.sleep(1)
         return stages_network.layout
+    elif pathname == "/page-5":
+        #time.sleep(1)
+        return model_page.layout
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [

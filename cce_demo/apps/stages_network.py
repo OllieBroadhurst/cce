@@ -8,7 +8,7 @@ import time
 import pandas as pd
 from datetime import datetime as dt, timedelta
 
-
+from app import app
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -17,7 +17,8 @@ import plotly.graph_objs as go
 import plotly as ply
 #import chart_studio.plotly as py
 
-from app import app
+#####################################################################################################################
+
 #####################################################################################################################
 
 
@@ -267,7 +268,7 @@ fig = go.Figure(data=data_trace,
                 
 render_graph = html.Div([
     html.Div([html.H1("Aggregated Order and Device Journey")], className="row", style={'textAlign': "center"}),
-    html.Div([dcc.Graph(id="stages-graph", figure = fig, style={'width': '1300px','height' : '700px'})],id = 'graph-Div'),
+    html.Div([dcc.Graph(id="stages-graph", figure = fig, style={'float':'left','width': '1300px','height' : '700px'})],id = 'graph-Div'),
 ], className="container")
 
 
@@ -452,7 +453,7 @@ def render_stages_graph(n_clicks,
                         journey_duration_max,
                         deal_type_DD
                         ):
-    if n_clicks is not None:
+    if n_clicks >= 1:
         
         print(type(n_clicks) , n_clicks)
         print(type(service_type_DD), service_type_DD)

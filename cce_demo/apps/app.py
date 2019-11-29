@@ -202,16 +202,15 @@ def generate_tree(click_btn, node_click, services, types,
     history = json.loads(btn_history)
     links = json.loads(links)
     routes = json.loads(routes)
-    labels = json.loads(hover_labels)
 
     links = {literal_eval(k): v for k, v in links.items()}
     routes = {literal_eval(k): literal_eval(v) for k, v in routes.items()}
-    labels = {literal_eval(k): v for k, v in labels.items()}
 
     if deals is not None:
         deals = sum([literal_eval(d) for d in deals], [])
 
     if str(click_btn) not in history.keys() and click_btn is not None:
+
         fig, links, routes = get_figure(None, services, types, deals, status,
                                         start_date_val, end_date_val, dispute_val,
                                         action_filter, fault_filter, min_hours,
@@ -220,12 +219,13 @@ def generate_tree(click_btn, node_click, services, types,
         labels = fig['data'][0]['hovertext']
         x_y = list(zip(fig['data'][0]['x'], fig['data'][0]['y']))
 
-        labels = {str(x_y[i]): k for i, k in enumerate(labels)}
+        if labels is not None:
+            labels = {str(x_y[i]): k for i, k in enumerate(labels)}
+            labels = {str(k): v for k, v in labels.items()}
 
         history[click_btn] = 1
         links = {str(k): v for k, v in links.items()}
         routes = {str(k): str(v) for k, v in routes.items()}
-        labels = {str(k): v for k, v in labels.items()}
 
         return fig, json.dumps(history), json.dumps(links), json.dumps(routes), json.dumps(labels)
 
@@ -233,6 +233,10 @@ def generate_tree(click_btn, node_click, services, types,
 
         selection_x = node_click['points'][0]['x']
         selection_y = node_click['points'][0]['y']
+
+        labels = json.loads(hover_labels)
+        if labels is not None:
+            labels = {literal_eval(k): v for k, v in labels.items()}
 
         current_fig = find_journey(current_fig,
                                    links,
@@ -243,7 +247,7 @@ def generate_tree(click_btn, node_click, services, types,
 
         links = {str(k): v for k, v in links.items()}
         routes = {str(k): str(v) for k, v in routes.items()}
-        labels = {str(k): v for k, v in labels.items()}
+        labels = {str(k): str(v) for k, v in labels.items()}
 
         return current_fig, json.dumps(history), json.dumps(links), json.dumps(routes), json.dumps(labels)
     else:
