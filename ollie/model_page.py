@@ -63,13 +63,15 @@ def get_chart(n):
 def display_data(clicked_data, data):
     if clicked_data is not None:
         data = json.loads(data)
-        lower_lim = float(clicked_data['points'][0]['x'][:5])
-        upper_lim = float(clicked_data['points'][0]['x'][-5:])
+
+
+        lower_lim = float(clicked_data['points'][0]['x'].split()[0])
+        upper_lim = float(clicked_data['points'][0]['x'].split()[-1])
 
         table_data = []
         for i in data:
             if i['probability'] > lower_lim and i['probability'] <= upper_lim:
-                i['probability'] = round(i['probability'], 3)
+                i['probability'] = round(i['probability'], 5)
                 table_data.append(i)
 
         return [table_data]

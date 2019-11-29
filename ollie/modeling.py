@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 
 TRAIN_DATA_LIMIT = 200000
-PREDICT_DATA_LIMIT = 500000
+PREDICT_DATA_LIMIT = 1800000
 
 
 def data_preprocess(X):
@@ -277,8 +277,8 @@ def get_bar_graph():
     graph_data = predict_probs(x_pred)
     x_pred = None
 
-    graph_data['probability'] = graph_data['probability'] * (1 - 0.002)
-    graph_data = graph_data[graph_data['probability'] >= 0.29].drop_duplicates()
+    graph_data['probability'] = graph_data['probability'] * (1- 0.002)
+    graph_data = graph_data[graph_data['probability'] >= 0.19].drop_duplicates()
     graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x <= 0.5 else 'orange' if x < 0.75 else 'red')
     graph_data = graph_data.join(accounts)
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
@@ -289,9 +289,10 @@ def get_bar_graph():
 
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
-    graph_data['bin'] = pd.cut(graph_data['probability'], bins=15)
+    graph_data['bin'] = pd.cut(graph_data['probability'], bins=20)
 
-    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(round(x.left, 3), round(x.right / (1 - 0.002), 3)))
+    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(round(x.left, 3), round(x.right, 3)))
+    graph_data['probability'] = graph_data['probability'] / (1 - 0.002)
 
     graph_data = graph_data.sort_values('bin').drop_duplicates()
 
@@ -303,8 +304,7 @@ def get_bar_graph():
 
     c = graph_data['category']
 
-    fig = go.Figure(
-                data=[go.Bar(x=x, y=y, marker_color=c)],
-                )
+    fig = go.Figure(data=[go.Bar(x=x, y=y,
+                marker_color=c)])
 
     return fig, model_table_data
