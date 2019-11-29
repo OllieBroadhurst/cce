@@ -71,7 +71,7 @@ def display_data(clicked_data, data):
         table_data = []
         for i in data:
             if i['probability'] > lower_lim and i['probability'] <= upper_lim:
-                i['probability'] = round(i['probability'], 5)
+                i['probability'] = i['probability'].round(4)
                 table_data.append(i)
 
         return [table_data]
