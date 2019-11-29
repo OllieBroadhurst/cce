@@ -219,5 +219,5 @@ def criteria_tree_sql(service_type, customer_type, deal_desc, action_status,
           on Durations.Stage = STAGES_ADDED.Stage
           and Durations.ORDER_ID_ANON = STAGES_ADDED.ORDER_ID_ANON
           order by STAGES_ADDED.ORDER_ID_ANON, STAGES_ADDED.Stage, STAGES_ADDED.MSISDN_ANON"""
-
+    
     return query

@@ -1,163 +1,192 @@
+#All components needed to get the Dash server to run and to display our graphs in the Dash app
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output,State
 import dash_core_components as dcc
 import dash_html_components as html
-#from Sunburst_Queries import Overall_Query
+from dash.exceptions import PreventUpdate
+import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
+#importing pandas and numpy for data manipulation and datetime to assist with the filtering of data.
 from datetime import datetime as dt, timedelta
 import pandas as pd
 import numpy as np
 
 from app import app
 
-Overall_Query = """with cte as (
-SELECT DISTINCT
-orders.source,
-orders.ORIGINAL_SALES_CHANNEL_DESC,
-orders.ACCOUNT_NO_ANON,  
-if(disputes.ACCOUNT_NO_ANON is null, 0, 1) has_dispute
-FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon` orders
-left join (SELECT DISTINCT ACCOUNT_NO_ANON FROM `bcx-insights.telkom_customerexperience.disputes_20190903_00_anon`) disputes
-on orders.ACCOUNT_NO_ANON = disputes.ACCOUNT_NO_ANON)
+#Setting up the initial date that is used as parameters for the function to draw our initial graphs.
+start_date = (dt.today() - timedelta(days=90)).date()
+end_date = dt.today().date()
 
-select * except(CUSTOMER_NO_ANON) from cte
+#Function that is used to generate the sunburst. It contains the Query that communicates with GBQ and then the data is passed to their respective graphs.
+def generate_sunburst(start_date,end_date):
+	Overall_Query = """with cte as (
+	SELECT DISTINCT
+	CASE WHEN orders.source = 'F' then 'Fixed' else 'Mobile' END as source,
+	orders.ORIGINAL_SALES_CHANNEL_DESC,
+	orders.ACCOUNT_NO_ANON, 
+	orders.ORDER_CREATION_DATE as ORDER_DATE,
+	if(disputes.ACCOUNT_NO_ANON is null, 'No Dispute', 'Dispute') has_dispute,
+	CASE WHEN orders.OPEN_CLOSE_INDIC = 'O' then 'Open' else 'Closed' END as OPEN_CLOSE
+	FROM `bcx-insights.telkom_customerexperience.orders_20191113_anon` orders
+	left join (SELECT DISTINCT ACCOUNT_NO_ANON FROM `bcx-insights.telkom_customerexperience.disputes_20191113_anon`) disputes
+	on orders.ACCOUNT_NO_ANON = disputes.ACCOUNT_NO_ANON)
 
-join  (select 
-CUSTOMER_BRAND,
-SERVICE_TYPE,
-CUSTOMER_NO_ANON from `bcx-insights.telkom_customerexperience.customerdata_20190902_00_anon` 
+	select * except(CUSTOMER_NO_ANON) from cte
 
-group by 
-CUSTOMER_NO_ANON,
-CUSTOMER_BRAND,
-SERVICE_TYPE,
-CREDIT_CLASS_DESC,
-SOURCE) customers
+	join  (select 
+	CUSTOMER_BRAND,
+	CUSTOMER_NO_ANON from `bcx-insights.telkom_customerexperience.customerdata_20191113_anon` 
 
-on customers.CUSTOMER_NO_ANON = cte.ACCOUNT_NO_ANON
-GROUP BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC ,cte.ACCOUNT_NO_ANON ,cte.has_dispute,customer_brand,service_type
-ORDER BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC DESC
-limit 500000
-"""
+	group by 
+	CUSTOMER_NO_ANON,
+	CUSTOMER_BRAND,
+	CREDIT_CLASS_DESC,
+	SOURCE) customers
 
-Data_df = pd.read_gbq(Overall_Query,
-                project_id = 'bcx-insights',
-                dialect = 'standard')
-                
-                
-label = ['Orders']
-parent = ['']
-value = [len(Data_df)]
+	on customers.CUSTOMER_NO_ANON = cte.ACCOUNT_NO_ANON
+	WHERE cte.ORDER_DATE BETWEEN '{0}' AND '{1}'
+	GROUP BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC ,cte.ACCOUNT_NO_ANON ,cte.has_dispute,cte.OPEN_CLOSE,customer_brand, cte.ORDER_DATE
+	ORDER BY cte.source,cte.ORIGINAL_SALES_CHANNEL_DESC DESC
+	LIMIT 100000
+	""".format(start_date,end_date)
 
-for s in Data_df['source'].unique():
-  label.append(s)
-  parent.append('Orders')
-  value.append(len(Data_df[Data_df['source']==s]))
+	Import_df = pd.read_gbq(Overall_Query,
+	                    project_id = 'bcx-insights',
+	                    dialect = 'standard')
 
-  temp_df = Data_df[Data_df['source']==s]
-  for osc in temp_df['ORIGINAL_SALES_CHANNEL_DESC'].unique():
-    label.append(osc)
-    parent.append(s)
-    value.append(len(temp_df[temp_df['ORIGINAL_SALES_CHANNEL_DESC']==osc]))
-    
-    
-import plotly.graph_objects as go
+	Data_df = Import_df.groupby('ORIGINAL_SALES_CHANNEL_DESC').filter(lambda x : len(x)>1000)
+	Data_df_less = Import_df.groupby('ORIGINAL_SALES_CHANNEL_DESC').filter(lambda x : len(x)>1000)
 
-sun =go.Figure(go.Sunburst(
-    labels=label,
-    parents=parent,
-    values=value,
-    branchvalues="total",
-    maxdepth=2
-))
+	ID = ['Orders']      
+	label = ['Orders']
+	parent = ['']
+	value = [len(Data_df)]
+	ID2 = []
+	label2 = []
+	parent2 = []
+	value2 = []
+	for s in Data_df['source'].unique():
+		ID.append('-'+s)
+		label.append(s)
+		parent.append('Orders')
+		value.append(len(Data_df[Data_df['source']==s]))
 
-sun.update_layout(margin = dict(t=0, l=0, r=0, b=0))
+		temp_df = Data_df[Data_df['source']==s]
+		for osc in temp_df['ORIGINAL_SALES_CHANNEL_DESC'].unique():
+			ID2.append(s+'-'+osc)
+			label2.append(osc)
+			parent2.append(s)
+			value2.append(len(temp_df[temp_df['ORIGINAL_SALES_CHANNEL_DESC']==osc]))
+	    
+	ID_less = ['Other-Orders']      
+	label_less = ['Orders']
+	parent_less = ['']
+	value_less = [len(Data_df_less)]
+	ID2_less = []
+	label2_less = []
+	parent2_less = []
+	value2_less = []
+	for O in Data_df_less['OPEN_CLOSE'].unique():
+		ID_less.append('-'+O)
+		label_less.append(O)
+		parent_less.append('Orders')
+		value_less.append(len(Data_df_less[Data_df_less['OPEN_CLOSE']==O]))
 
-layout = html.Div([
-    html.H1('Telkom Customer Sunburst',style={'text-align':'center'}),
+		temp_df = Data_df_less[Data_df_less['OPEN_CLOSE']==O]
+		for osc in temp_df['has_dispute'].unique():
+			ID2_less.append(O+'-'+osc)
+			label2_less.append(osc)
+			parent2_less.append(O)
+			value2_less.append(len(temp_df[temp_df['has_dispute']==osc]))
+
+	Sun_ID = ID+ID2
+	Sun_label = label+label2
+	Sun_parent = parent+parent2
+	Sun_value = value+value2
+
+	Sun_ID_less = ID_less+ID2_less
+	Sun_label_less = label_less+label2_less
+	Sun_parent_less = parent_less+parent2_less
+	Sun_value_less = value_less+value2_less
+
+
+	sun =go.Figure(go.Sunburst(
+	    labels=Sun_label,
+	    parents=Sun_parent,
+	    values=Sun_value,
+	    branchvalues = 'total',
+	    hoverinfo = 'all',
+	    maxdepth=2
+	))
+	sun.update_layout(margin = dict(t=10, l=10, r=10, b=10))
+
+	sunless =go.Figure(go.Sunburst(
+	    labels=Sun_label_less,
+	    parents=Sun_parent_less,
+	    values=Sun_value_less,
+	    branchvalues = 'total',
+	    hoverinfo = 'all',
+	    maxdepth=2
+	))
+	sunless.update_layout(margin = dict(t=10, l=10, r=10, b=10))
+	return (sun, sunless)
+
+	#return Sun_label, Sun_parent, Sun_value, Sun_label_less, Sun_parent_less, Sun_value_less
+
+#Sun_label, Sun_parent, Sun_value, Sun_label_less, Sun_parent_less, Sun_value_less = generate_sunburst(start_date,end_date)
+
+sun, sunless = generate_sunburst(start_date,end_date)
+
+#sun =go.Figure(go.Sunburst(
+    #labels=Sun_label,
+    #parents=Sun_parent,
+    #values=Sun_value,
+    #branchvalues = 'total',
+	#hoverinfo = 'all',
+	##maxdepth=2
+#))
+#sun.update_layout(margin = dict(t=10, l=10, r=10, b=10))
+
+#sunless= go.Figure(go.Sunburst(
+	#labels=Sun_label_less,
+	#parents=Sun_parent_less,
+	#values=Sun_value_less,
+	#branchvalues = 'total',
+	#hoverinfo = 'all',
+	##maxdepth=2
+#))
+#sunless.update_layout(margin = dict(t=10, l=10, r=10, b=10))
+
+layout =  dcc.Loading(html.Div([
+    html.H1('Telkom Customer Experience Home Page',style={'text-align':'center'}),
     html.Div([dcc.DatePickerRange(
+    id = 'DatePicker',
     display_format='YYYY-MM-DD',
     start_date_placeholder_text='YYYY-MMM-DD',
     end_date_placeholder_text='YYYY-MMM-DD',
     max_date_allowed=dt.today().date(),
     end_date=dt.today().date(),
-    start_date=(dt.today() - timedelta(days=30)).date()
-    )], style = {'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center'}), 
-    html.Div(
-        [dcc.Graph(id='sun',figure=sun)],
-        style={'width': '100%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'}),
-    html.Div(id='output', style={'clear': 'both','display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'})
-],style={'width': '90%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'padding-top': '10px'})
+    start_date=(dt.today() - timedelta(days=90)).date(),
+    style = {'width': '400px', 'display': 'inline-block'}),
+    dbc.Button("Find Date",id='Run_Btn', color="primary", className="mr-1")]),
+    html.Div([dcc.Graph(id = 'sunless1', figure=sunless, style={'width': '49%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'float':'right'})]),
+    html.Div([dcc.Graph(id = 'sun1',figure=sun, style={'width': '49%', 'display': 'flex', 'align-items': 'center', 'justify-content': 'center', 'float':'left'})]),
+]))
 
-@app.callback(Output('output', 'children'), [Input('sun', 'selectedPath')])
-def display_selected(selected_path):
-    return 'You have selected path: {}'.format('->'.join(selected_path or []) or 'root')
 
-@app.callback(Output('graph', 'figure'), [Input('sun', 'data'), Input('sun', 'selectedPath')])
-def display_graph(data, selected_path):
-    x = []
-    y = []
-    text = []
-    color = []
-    joined_selected = '->'.join(selected_path or [])
 
-    SELECTED_COLOR = '#03c'
-    SELECTED_CHILDREN_COLOR = '#8cf'
-    SELECTED_PARENTS_COLOR = '#f80'
-    DESELECTED_COLOR = '#ccc'
+@app.callback(
+    [dash.dependencies.Output('sun1', 'figure'),
+    dash.dependencies.Output('sunless1', 'figure')],
+    [dash.dependencies.Input('Run_Btn', 'n_clicks')],
+    [dash.dependencies.State('DatePicker', 'start_date'),
+     dash.dependencies.State('DatePicker', 'end_date'),])
+def update_output( n_clicks,start_date, end_date):
+    if n_clicks is not None:
+        return  generate_sunburst(start_date,end_date)
+    else:
+        raise PreventUpdate
 
-    def node_color(node_path):
-        joined_node = '->'.join(node_path)
-        if joined_node == joined_selected:
-            return SELECTED_COLOR
-        if joined_node.startswith(joined_selected):
-            return SELECTED_CHILDREN_COLOR
-        if joined_selected.startswith(joined_node):
-            return SELECTED_PARENTS_COLOR
-        return DESELECTED_COLOR
-
-    def append_point(child_count, size, node, node_path):
-        x.append(child_count)
-        y.append(size)
-        text.append(node['name'])
-        color.append(node_color(node_path))
-
-    def crawl(node, node_path):
-        if 'size' in node:
-            append_point(1, node['size'], node, node_path)
-            return (1, node['size'])
-        else:
-            node_count, node_size = 1, 0
-            for child in node['children']:
-                this_count, this_size = crawl(child, node_path + [child['name']])
-                node_count += this_count
-                node_size += this_size
-            append_point(node_count, node_size, node, node_path)
-            return (node_count, node_size)
-
-    crawl(data, [])
-
-    layout = {
-        'width': 1000,
-        'height': 1000,
-        'xaxis': {'title': 'Total Nodes', 'type': 'log'},
-        'yaxis': {'title': 'Total Size', 'type': 'log'},
-        'hovermode': 'closest'
-    }
-
-    return {
-        'data': [{
-            'x': x,
-            'y': y,
-            'text': text,
-            'textposition': 'middle right',
-            'marker': {
-                'color': color,
-                'size': [(v*v + 100)**0.5 for v in y],
-                'opacity': 0.5
-            },
-            'mode': 'markers+text',
-            'cliponaxis': False
-        }],
-        'layout': layout
-    }
-
+if __name__ == '__main__':
+    app.run_server(debug=False)
