@@ -79,7 +79,7 @@ customer_type_DD = dcc.Dropdown(
 ) 
 
 def action_type():
-    type_sql = r"""SELECT distinct ACTION_TYPE_DESC
+    type_sql = """SELECT distinct ACTION_TYPE_DESC
     FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
     order by ACTION_TYPE_DESC"""
 
@@ -87,7 +87,7 @@ def action_type():
                             project_id='bcx-insights',
                             dialect='standard')
 
-    df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].str.title().drop_duplicates()
+    df['ACTION_TYPE_DESC'] = df['ACTION_TYPE_DESC'].drop_duplicates()
 
     df = df['ACTION_TYPE_DESC'].dropna().tolist()
 
@@ -110,7 +110,7 @@ action_type_DD = dcc.Dropdown(
 
 
 def deal_type():
-    type_sql = r"""SELECT distinct DEAL_DESC
+    type_sql = """SELECT distinct DEAL_DESC
     FROM `bcx-insights.telkom_customerexperience.orders_20190926_00_anon`
     order by DEAL_DESC"""
 
@@ -118,7 +118,7 @@ def deal_type():
                             project_id='bcx-insights',
                             dialect='standard')
 
-    df['DEAL_DESC'] = df['DEAL_DESC'].str.title().drop_duplicates()
+    df['DEAL_DESC'] = df['DEAL_DESC'].drop_duplicates()
 
     df = df['DEAL_DESC'].dropna().tolist()
 
