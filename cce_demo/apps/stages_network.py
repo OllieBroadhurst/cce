@@ -820,7 +820,7 @@ def render_stages_graph(n_clicks,
             size=10,
             colorbar=dict(
             thickness=15,
-            title='Node Connections',
+            title='No. of Journeys',
             xanchor='left',
             titleside='right'
         ),
@@ -870,7 +870,7 @@ def render_stages_graph(n_clicks,
         
         return go.Figure(data=data_trace,
                 layout=go.Layout(
-                title='Total Journey Time in : ' + str(total_journey_time_DD),
+                title='Date Range : ' + str(start_date) + ' -> ' + str(end_date_val),
                 titlefont=dict(size=16),
                 showlegend=False,
                 hovermode='closest',

@@ -70,7 +70,7 @@ sidebar = html.Div(
             [
                 html.Hr(),
                 html.P(
-                    "Customer Journey",
+                    "Consumer Customer Experience Data Deep Dive",
                     className="lead",
                     style = {'text-align': 'center'},
                 ),
