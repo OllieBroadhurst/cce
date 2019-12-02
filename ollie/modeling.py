@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 import plotly.graph_objects as go
 
 
-TRAIN_DATA_LIMIT = 200000
+TRAIN_DATA_LIMIT = 2000000
 PREDICT_DATA_LIMIT = 1800000
 
 
@@ -22,7 +22,8 @@ def data_preprocess(X):
         if c in X.columns:
             X = X.drop(c, 1)
 
-    X['COMMITMENT_PERIOD'] = X['COMMITMENT_PERIOD'].astype(str)
+    if 'COMMITMENT_PERIOD' in X.columns:
+        X['COMMITMENT_PERIOD'] = X['COMMITMENT_PERIOD'].astype(str)
 
     types = X.dtypes
     numeric_cols = list(types[types==float].index)
@@ -40,17 +41,18 @@ def data_preprocess(X):
         with open('columns.txt', 'r') as f:
             columns = [l.strip('\n') for l in f.readlines()]
 
-        for c in columns:
-            if c not in X.columns:
-                X[c] = 0
-
         for c in X.columns:
-            if c not in columns:
-                X = X.drop(c, 1)
+            if c not in columns and c != 'Within_Dispute_Period':
+                X = X.drop(c, axis=1)
+
+        for c in columns:
+            if c not in X.columns and c != 'Within_Dispute_Period':
+                X[c] = 0
 
     X = X.sort_index(1)
 
     return X
+
 
 def get_train_data(from_date_customer, from_date_dispute, row_limit):
     if row_limit > 0:
@@ -188,10 +190,12 @@ def upsample(data, repetitions):
 def train_data(from_date_customer, from_date_dispute, data_limit=500000):
     df = get_train_data(from_date_customer, from_date_dispute, data_limit)
 
-    dispute_prop = round(df['Within_Dispute_Period'].sum()/df['Within_Dispute_Period'].count(), 3)
+    #print(df['Within_Dispute_Period'].count())
+    #dispute_prop = round(df['Within_Dispute_Period'].sum()/df['Within_Dispute_Period'].count(), 3)
 
-    df = upsample(df, int(0.2/dispute_prop))
-    save_columns(from_date_customer, datetime.today().date().strftime('%Y-%m-%d'))
+
+    #df = upsample(df, int(0.2/dispute_prop))
+
     X = data_preprocess(df.drop('Within_Dispute_Period', 1))
 
     X = X.sort_index(1)
@@ -220,10 +224,10 @@ def train_and_save_model():
     return model
 
 
-def check_for_model():
+def check_for_model(from_date, to_date):
     if 'model.pickle' not in os.listdir():
         print('Model not found, training new model...')
-
+        save_columns(from_date, to_date)
         model = train_and_save_model()
         print('Model trained')
 
@@ -261,24 +265,24 @@ def default_risk_graph():
 
 
 def get_bar_graph():
-
+    start_time = datetime.now()
     from_date = datetime(2019, 9,1).strftime('%Y-%m-%d')
     to_date = datetime(2019, 11,13).strftime('%Y-%m-%d')
     #from_date = (datetime.today().date() - timedelta(days=61)).strftime('%Y-%m-%d')
     #to_date = datetime.today().date().strftime('%Y-%m-%d')
 
-    check_for_model()
+    check_for_model(from_date, to_date)
     x_pred = get_current_customer_data(from_date, to_date, PREDICT_DATA_LIMIT)
 
     summary_stats = x_pred[['OFFER_DESC', 'SERVICE_TYPE', 'Avg_Amount']]
     x_pred = x_pred.drop('OFFER_DESC', 1)
 
     accounts = x_pred['CUSTOMER_NO_ANON']
+
     graph_data = predict_probs(x_pred)
     x_pred = None
 
-
-    graph_data = graph_data[graph_data['probability'] >= 0.19].drop_duplicates()
+    graph_data = graph_data[graph_data['probability'] >= 0.09].drop_duplicates()
     graph_data['category'] = graph_data['probability'].apply(lambda x: 'green' if x < 0.5 else 'orange' if x < 0.75 else 'red')
     graph_data = graph_data.join(accounts)
     graph_data = graph_data.groupby('CUSTOMER_NO_ANON', as_index=False).max()
@@ -289,11 +293,17 @@ def get_bar_graph():
 
     model_table_data['Avg_Amount'] = model_table_data['Avg_Amount'].round(2)
 
-    graph_data['bin'] = pd.cut(graph_data['probability'], bins=17)
+    graph_data['probability'] = graph_data['probability'].round(5)
+    graph_data['bin'] = pd.cut(graph_data['probability'], bins=5)
 
-    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(x.left, x.right))
+    graph_data['bin'] = graph_data['bin'].apply(lambda x: '{0} - {1}'.format(round(x.left,3), round(x.right, 3)))
 
     graph_data = graph_data.sort_values('bin').drop_duplicates()
+
+    model_table_data = model_table_data.join(graph_data.set_index('CUSTOMER_NO_ANON')['bin'], on='CUSTOMER_NO_ANON')
+
+    model_table_data.columns = ['Customer ID', 'Probability', 'Offer Description',
+                                'Service Type', 'Average Amount', 'bin']
 
     graph_data = graph_data[['bin', 'CUSTOMER_NO_ANON', 'category']].groupby(['bin', 'category'], as_index=False).count()
     graph_data = graph_data.dropna()
@@ -305,5 +315,7 @@ def get_bar_graph():
 
     fig = go.Figure(data=[go.Bar(x=x, y=y,
                 marker_color=c)])
+
+    print('Duration:', datetime.now() - start_time)
 
     return fig, model_table_data
