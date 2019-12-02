@@ -870,7 +870,7 @@ def render_stages_graph(n_clicks,
         
         return go.Figure(data=data_trace,
                 layout=go.Layout(
-                title='Date Range : ' + str(start_date) + ' -> ' + str(end_date_val),
+                title='Date Range : ' + str(start_date) + ' -> ' + str(end_date),
                 titlefont=dict(size=16),
                 showlegend=False,
                 hovermode='closest',
