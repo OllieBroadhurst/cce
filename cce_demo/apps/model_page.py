@@ -7,8 +7,10 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_table
 import json
-from app import app
+
 from apps.modeling import get_bar_graph, default_risk_graph
+from app import app
+
 
 button = html.Div(html.Button('Run', id='predict_button', style={'float': 'right'}),
         style={'padding-right': '15px', 'padding-top': '15px'})
@@ -36,7 +38,6 @@ table = html.Div(dash_table.DataTable(
         style={'padding-top': '5px', 'width': '80%',
             'float': 'right', 'padding-right': '15px'})
 
-
 layout = html.Div([button, graph, table, table_data])
 
 
@@ -48,7 +49,8 @@ layout = html.Div([button, graph, table, table_data])
 def get_chart(n):
     if n is not None:
         fig, table_data = get_bar_graph()
-        table_columns = [{"name": i, "id": i} for i in table_data.columns]
+
+        table_columns = [{"name": i, "id": i} for i in table_data.columns if i!='bin']
         table_records = table_data.to_dict('records')
         table_records = json.dumps(table_records)
         return fig, table_columns, table_records
@@ -61,13 +63,16 @@ def get_chart(n):
 def display_data(clicked_data, data):
     if clicked_data is not None:
         data = json.loads(data)
-        lower_lim = float(clicked_data['points'][0]['x'][:4])
-        upper_lim = float(clicked_data['points'][0]['x'][-4:])
+
+        lower_lim = float(clicked_data['points'][0]['x'].split()[0])
+        upper_lim = float(clicked_data['points'][0]['x'].split()[-1])
 
         table_data = []
         for i in data:
-            if i['probability'] > lower_lim and i['probability'] <= upper_lim:
-                table_data.append(i)
+            if i['bin'] == clicked_data['points'][0]['x']:
+                i['Probability'] = round(i['Probability'], 4)
+                table_record = {k:v for k, v in i.items() if k!='bin'}
+                table_data.append(table_record)
 
         return [table_data]
     else:
