@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 
 TRAIN_DATA_LIMIT = 2000000
-PREDICT_DATA_LIMIT = 1800000
+PREDICT_DATA_LIMIT = 180000
 
 
 def data_preprocess(X):
