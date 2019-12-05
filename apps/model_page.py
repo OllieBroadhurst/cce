@@ -11,6 +11,7 @@ import json
 from apps.modeling import get_bar_graph, default_risk_graph
 from app import app
 
+
 button = html.Div(html.Button('Run', id='predict_button', style={'float': 'right'}),
         style={'padding-right': '15px', 'padding-top': '15px'})
 
@@ -36,9 +37,6 @@ table = html.Div(dash_table.DataTable(
             }),
         style={'padding-top': '5px', 'width': '80%',
             'float': 'right', 'padding-right': '15px'})
-
-FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-# app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESOME])
 
 layout = html.Div([button, graph, table, table_data])
 
