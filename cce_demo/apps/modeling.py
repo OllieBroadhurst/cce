@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 
 TRAIN_DATA_LIMIT = 2000000
-PREDICT_DATA_LIMIT = 180000
+PREDICT_DATA_LIMIT = 1800000
 
 
 def data_preprocess(X):
@@ -36,9 +36,9 @@ def data_preprocess(X):
 
     X = cats.join(nums)
 
-    if 'columns.txt' in os.listdir():
+    if 'columns.txt' in os.listdir(r'apps/'):
         columns = []
-        with open('apps/columns.txt', 'r') as f:
+        with open(r'apps/columns.txt', 'r') as f:
             columns = [l.strip('\n') for l in f.readlines()]
 
         for c in X.columns:
@@ -175,7 +175,7 @@ def save_columns(from_date_customer, to_date_customer):
     continuous_columns = ['Months_With_Offer', 'Had_Prior_Dispute', 'Avg_Amount', 'Std_Amount', 'Amount_Range']
     columns = categorical_columns + continuous_columns
 
-    with open('apps/columns.txt', 'w') as f:
+    with open(r'apps/columns.txt', 'w') as f:
         f.writelines('\n'.join(columns))
 
     return '{} columns saved in columns.txt'.format(len(columns))
@@ -218,14 +218,14 @@ def train_and_save_model():
 
     print('Training complete. Time taken:', datetime.now() - process_start_time)
 
-    with open('apps/model.pickle', 'wb') as model_file:
+    with open(r'apps/model.pickle', 'wb') as model_file:
         pickle.dump(model, model_file)
 
     return model
 
 
 def check_for_model(from_date, to_date):
-    if 'model.pickle' not in os.listdir('apps/'):
+    if 'model.pickle' not in os.listdir(r'apps/'):
         print('Model not found, training new model...')
         save_columns(from_date, to_date)
         model = train_and_save_model()
@@ -234,7 +234,7 @@ def check_for_model(from_date, to_date):
 
 def predict_probs(x):
     print('Model found')
-    with open('apps/model.pickle', 'rb') as saved_model:
+    with open(r'apps/model.pickle', 'rb') as saved_model:
         model = pickle.load(saved_model)
 
     x = data_preprocess(x)
