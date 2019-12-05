@@ -1,8 +1,22 @@
-# Team CCE Project
-Repo for team CCE's project
+# Project CCE
 
-Navigate to each team member's folder to see their code. This is *not* best practice but we'll merge them all later.
-If you're going to reference any libraries outside of these folders don't forget to mention this in your import statement. E.g:
-`from ollie.tree_chart import get_figure`
+### Installation
 
-Much love x
+The app requires pip for installation and python to run.
+Additional modules/packages can be install after cloning the repo and 
+doing the following commands.
+
+```sh
+$ cd cce
+$ pip install -r requirements.txt
+```
+
+To execute the app run the following command.
+
+```sh
+$ cd cce
+$ python index.py
+```
+
+Then navigate to the following url http://127.0.0.1:8050
+

@@ -96,17 +96,13 @@ sidebar = html.Div(
     id="sidebar",
 )
 
-#content = html.Div(id="page-content")
-
-#content = dcc.Loading(id="content-loading", 
-                      #children=[html.Div(id="page-content",style={'width' : '90%'})],
-                      ##fullscreen=True,
-                      ##style={'position': 'absolute'}
-                      #)
 
 content = html.Div(id="page-content",style={'width' : '100%'})
 
+# Content displayed on main page.
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
+
+# Change browser tab text title.
 app.title = 'Project CCE'
 app.config.suppress_callback_exceptions = True
 
