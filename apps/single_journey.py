@@ -26,7 +26,7 @@ tables = {
 }
 
 
-
+# Default element list for network graph on load.
 elements = [{'data': {'id': 'gen-node', 'name': "Search for an Account Number...", 
                       'weight': 65, 
                       'faveColor': '#095575',
@@ -37,7 +37,7 @@ elements = [{'data': {'id': 'gen-node', 'name': "Search for an Account Number...
                       }}]
 
 
-
+# Network graph object visualising journey
 cyto_journey = html.Div([
     cyto.Cytoscape(
         id='cytoscape',
@@ -59,7 +59,7 @@ cyto_journey = html.Div([
             'selector': 'node',
             'style': {
                 'shape': 'data(faveShape)',
-                'width': 'mapData(weight, 1, 100, 1, 200)',
+                'width': 'mapData(weight, 1, 100, 1, 200)', 
                 'height': 'mapData(weight, 1, 100, 1, 100)',
                 'content': 'data(name)',
                 'text-valign': 'center',
@@ -112,7 +112,7 @@ cyto_journey = html.Div([
 
 
 
-
+# Function to update network graph elements once CN has been searched for.
 
 def update_elements(acc_no,clicks, elements):
     
